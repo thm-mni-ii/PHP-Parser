@@ -2,66 +2,84 @@ package parser
 
 import fastparse.noApi._
 import WsAPI._
-
 import ExpressionParser.expression
 import PHPParser._
-
 import ast.Ast._
 
+import scala.collection.immutable.Stream.Empty
+
 object StatementParser {
-  val statement : P[Statement] = P(compoundStmnt | namedLabelStmnt | selectionStmnt | selectionStmnt | iterationStmnt | jumpStmnt | tryStmnt |
+
+  def statement : P[Statement] = if(isTagProcessed) possibleStatements else echoTagStmnt
+
+  val possibleStatements : P[Statement] = P(compoundStmnt | namedLabelStmnt | selectionStmnt | selectionStmnt | iterationStmnt | jumpStmnt | tryStmnt |
       declareStmnt | constDeclStmnt | functionDefStmnt | classDeclStmnt | interfaceDeclStmnt | traitDeclStmnt |
-      namespaceDefStmnt | namespaceUseDeclStmnt | globalDeclStmnt | functionStaticDeclStmnt | expStmnt).log()
+      namespaceDefStmnt | namespaceUseDeclStmnt | globalDeclStmnt | functionStaticDeclStmnt | emptyStmnt | expStmnt).log()
+
+  val emptyStmnt : P[EmptyStmnt] = P(semicolonFactory).map(EmptyStmnt)
 
   val compoundStmnt : P[CompoundStmnt] = P("{" ~/ statement.rep ~ "}").map(CompoundStmnt)
 
+  def echoTagStmnt : P[EchoTagStmnt] = {
+    isTagProcessed = true
+    P(echoStartTag ~ expression.rep(min=1, sep=",") ~ semicolonFactory).map(t => EchoTagStmnt(t._2, t._3))
+  }
+
   val namedLabelStmnt : P[NamedLabelStmnt] = P(name ~ ":" ~ statement).map(t => NamedLabelStmnt(t._1, t._2))
 
-  val expStmnt : P[ExpressionStmnt] = P(expression.? ~ ";").map(ExpressionStmnt)
+  val expStmnt : P[ExpressionStmnt] = P(expression ~ semicolonFactory).map(t => ExpressionStmnt(t._1, t._2))
 
   val selectionStmnt : P[SelectionStmnt] = P(ifStmnt | switchStmnt)
 
-  val ifBody : P[(Seq[Statement], Seq[(Expression, Seq[Statement])], Option[Seq[Statement]])] =
-    P((":" ~ (statement).rep(1) ~ ("elseif" ~ "(" ~ expression ~ ")" ~ ":" ~ statement.rep(1)).rep ~ ("else" ~ ":" ~ statement.rep).?) |
-      (statement ~ ("elseif" ~ "(" ~ expression ~ ")" ~ statement).rep ~ ("else" ~ statement).?).map(t => (Seq(t._1), t._2.map(e => (e._1, Seq(e._2))), t._3.map(Seq(_)))))
+  val ifBody : P[(Seq[Statement], Seq[(Expression, Seq[Statement])], Option[Seq[Statement]], Option[Text])] =
+    P((":" ~ (statement).rep(1) ~ ("elseif" ~ "(" ~ expression ~ ")" ~ ":" ~ statement.rep(1)).rep ~ ("else" ~ ":" ~ statement.rep).? ~ "endif" ~ semicolonFactory) |
+      (statement ~ ("elseif" ~ "(" ~ expression ~ ")" ~ statement).rep ~ ("else" ~ statement).?).map(t => (Seq(t._1), t._2.map(e => (e._1, Seq(e._2))), t._3.map(Seq(_)), None)))
 
   val ifStmnt : P[IfStmnt] =
-    P("if" ~/ "(" ~ expression ~ ")" ~ ifBody).map(t => IfStmnt(t._1, t._2._1, t._2._2, t._2._3))
+    P("if" ~/ "(" ~ expression ~ ")" ~ ifBody).map(t => IfStmnt(t._1, t._2._1, t._2._2, t._2._3, t._2._4))
+
+  val switchBody : P[(Seq[SwitchBlock], Option[Text])] =
+    P((":" ~ (caseBlock | defaultBlock).rep ~ "endswitch" ~ semicolonFactory) |
+      ("{" ~ (caseBlock | defaultBlock).rep ~ "}").map(t => (t, None)))
 
   val switchStmnt : P[SwitchStmnt] =
-    P("switch" ~/ "(" ~ expression ~ ")" ~ (("{" ~ (caseBlock | defaultBlock).rep ~ "}") | (":" ~ (caseBlock | defaultBlock).rep ~ "endswitch" ~ ";"))).map(t => SwitchStmnt(t._1, t._2))
+    P("switch" ~/ "(" ~ expression ~ ")" ~ switchBody).map(t => SwitchStmnt(t._1, t._2._1, t._2._2))
 
   val caseBlock : P[CaseBlock] =
-    P("case" ~/ expression ~ (":" | ";") ~ statement.rep).map(t => CaseBlock(t._1, t._2))
+    P("case" ~/ expression ~ (":".!.map(_ => Seq()) | emptyStmnt.map(Seq(_))) ~ statement.rep).map(t => CaseBlock(t._1, t._2 ++ t._3))
 
   val defaultBlock : P[DefaultBlock] =
-    P("default" ~/ (":" | ";") ~ statement.rep).map(DefaultBlock)
+    P("default" ~/ (":".!.map(_ => Seq()) | emptyStmnt.map(Seq(_))) ~ statement.rep).map(t => DefaultBlock(t._1 ++ t._2))
 
   val iterationStmnt : P[IterationStmnt] = P(whileStmnt | doStmnt | forStmnt | foreachStmnt)
 
-  val whileBody : P[Seq[Statement]] =
-    P((":" ~ statement.rep ~ "endwhile" ~ ";") | statement.map(Seq(_)))
+  val whileBody : P[(Seq[Statement], Option[Text])] =
+    P((":" ~ statement.rep ~ "endwhile" ~ semicolonFactory) |
+      statement.map(t => (Seq(t), None)))
 
   val whileStmnt : P[WhileStmnt] =
-    P("while" ~/ "(" ~ expression ~ ")" ~ whileBody).map(t => WhileStmnt(t._1, t._2))
+    P("while" ~/ "(" ~ expression ~ ")" ~ whileBody).map(t => WhileStmnt(t._1, t._2._1, t._2._2))
 
   val doStmnt : P[DoStmnt] =
-    P("do" ~/ statement ~ "while" ~/ "(" ~ expression ~ ")").map(t => DoStmnt(t._2, t._1))
+    P("do" ~/ statement ~ "while" ~/ "(" ~ expression ~ ")" ~ semicolonFactory).map(t => DoStmnt(t._2, t._1, t._3))
 
-  val forBody : P[Seq[Statement]] = P(":" ~ statement.rep ~ "endfor" ~ ";" | statement.map(Seq(_)))
+  val forBody : P[(Seq[Statement], Option[Text])] =
+    P(":" ~ statement.rep ~ "endfor" ~ semicolonFactory | statement.map(t => (Seq(t), None)))
 
-  val forStmnt : P[ForStmnt] = P("for" ~/ "(" ~ expression.rep(sep=",") ~ ";" ~ expression.rep(sep=",") ~ ";" ~ expression.rep(sep=",") ~ ")" ~ forBody).map(t => ForStmnt(t._1, t._2, t._3, t._4))
+  val forExpressionList : P[ForExpressionList] = P(expression.rep(sep=",") ~ semicolonFactory).map(t => ForExpressionList(t._1, t._2))
+
+  val forStmnt : P[ForStmnt] = P("for" ~/ "(" ~ forExpressionList ~ forExpressionList ~ expression.rep(sep=",") ~ ")" ~ forBody).map(t => ForStmnt(t._1, t._2, ForExpressionList(t._3, None), t._4._1, t._4._2))
 
   val foreachBody : P[Seq[Statement]] = P((":" ~ statement.rep ~ "foreach" ~ ";") | statement.map(Seq(_)))
 
   val foreachStmnt : P[ForeachStmnt] = P("----").map(_ => ForeachStmnt())
   //TODO missing foreach
 
-  val jumpStmnt : P[JumpStmnt] = P(("goto" ~/ name ~ ";").map(GotoStmnt) |
-    ("continue" ~/ integerLiteral ~ ";").map(ContinueStmnt) |
-    ("break" ~/ integerLiteral ~ ";").map(BreakStmnt) |
-    ("return" ~/ expression.? ~ ";").map(ReturnStmnt) |
-    ("throw" ~/ expression ~ ";").map(ThrowStmnt))
+  val jumpStmnt : P[JumpStmnt] = P(("goto" ~/ name ~ semicolonFactory).map(t => GotoStmnt(t._1, t._2)) |
+    ("continue" ~/ integerLiteral ~ semicolonFactory).map(t => ContinueStmnt(t._1, t._2)) |
+    ("break" ~/ integerLiteral ~ semicolonFactory).map(t => BreakStmnt(t._1, t._2)) |
+    ("return" ~/ expression.? ~ semicolonFactory).map(t => ReturnStmnt(t._1, t._2)) |
+    ("throw" ~/ expression ~ semicolonFactory).map(t => ThrowStmnt(t._1, t._2)))
 
   val catchClause : P[CatchClause] = P("catch" ~/ "(" ~ qualifiedName ~ variableName ~ ")" ~ compoundStmnt)
     .map(t => CatchClause(t._1, t._2, t._3))
@@ -115,7 +133,7 @@ object StatementParser {
   val traitUseClause : P[TraitUseClause] = P("use" ~/ qualifiedName.rep(sep=",") ~ traitUseSpecs)
      .map(t => TraitUseClause(t._1, t._2))
 
-  val classMemberDecl : P[MemberDecl] = classConstDecl | propertyDecl | methodDecl | traitUseClause
+  val classMemberDecl : P[MemberDecl] = P(classConstDecl | propertyDecl | methodDecl | traitUseClause)
 
   val classDeclStmnt : P[ClassDecl] = P(classMod.? ~ "class" ~/ name ~ ("extends" ~ qualifiedName).? ~
       ("implements" ~ qualifiedName.rep(sep=",")).? ~ "{" ~/ classMemberDecl.rep ~ "}")

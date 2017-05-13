@@ -8,64 +8,52 @@ package ast
   */
 object Ast {
 
-  case class Script(s: Seq[ContentPart])
+  case class Script(leadingText: Text, s: Seq[Statement])
 
-  sealed abstract class ContentPart
+  case class Text(text: String)
 
-  case class Text(text: String) extends ContentPart
-
-  case class ScriptSection(echoTag: Boolean, stmnts: Seq[Statement]) extends ContentPart
+  trait EndTagElement {
+    val text: Option[Text]
+  }
 
   sealed abstract class Statement
 
-  case class CompoundStmnt(stmnts: Seq[Statement]) extends Statement
+  case class EmptyStmnt(override val text: Option[Text]) extends Statement with EndTagElement
+  case class EchoTagStmnt(exps : Seq[Expression], override val text: Option[Text]) extends Statement with EndTagElement
 
+  case class CompoundStmnt(stmnts: Seq[Statement]) extends Statement
   case class NamedLabelStmnt(name: Name, stmt: Statement) extends Statement
 
-  case class ExpressionStmnt(exp: Option[Expression]) extends Statement
+  case class ExpressionStmnt(exp: Expression, override val text: Option[Text]) extends Statement with EndTagElement
 
   sealed abstract class SelectionStmnt extends Statement
 
-  case class IfStmnt(exp: Expression, stmnts: Seq[Statement], elseifs: Seq[(Expression, Seq[Statement])], elseStmnts: Option[Seq[Statement]]) extends SelectionStmnt
-
-  case class SwitchStmnt(exp: Expression, cases: Seq[SwitchBlock]) extends SelectionStmnt
-
+  case class IfStmnt(exp: Expression, stmnts: Seq[Statement], elseifs: Seq[(Expression, Seq[Statement])], elseStmnts: Option[Seq[Statement]], override val text: Option[Text]) extends SelectionStmnt with EndTagElement
+  case class SwitchStmnt(exp: Expression, cases: Seq[SwitchBlock], override val text: Option[Text]) extends SelectionStmnt with EndTagElement
   sealed abstract class SwitchBlock
-
   case class CaseBlock(exp: Expression, stmnts: Seq[Statement]) extends SwitchBlock
-
   case class DefaultBlock(stmnts: Seq[Statement]) extends SwitchBlock
 
   sealed abstract class IterationStmnt extends Statement
 
-  case class WhileStmnt(cond: Expression, stmnts: Seq[Statement]) extends IterationStmnt
-
-  case class DoStmnt(cond: Expression, stmnt: Statement) extends IterationStmnt
-
-  case class ForStmnt(init: Seq[Expression], control: Seq[Expression], end: Seq[Expression], stmnts: Seq[Statement]) extends IterationStmnt
-
+  case class WhileStmnt(cond: Expression, stmnts: Seq[Statement], override val text: Option[Text]) extends IterationStmnt with EndTagElement
+  case class DoStmnt(cond: Expression, stmnt: Statement, override val text: Option[Text]) extends IterationStmnt with EndTagElement
+  case class ForExpressionList(exps: Seq[Expression], override val text: Option[Text]) extends EndTagElement
+  case class ForStmnt(init: ForExpressionList, control: ForExpressionList, end: ForExpressionList, stmnts: Seq[Statement], override val text: Option[Text]) extends IterationStmnt with EndTagElement
   case class ForeachStmnt() extends IterationStmnt
-
   sealed abstract class ForeachValue
-
   case class ForeachValueExp(exp: Expression, designateVar: Boolean) extends ForeachValue
-
   case class ForeachValueSeq(Seq: SeqIntrinsic) extends ForeachValue
 
   sealed abstract class JumpStmnt extends Statement
 
-  case class GotoStmnt(name: Name) extends JumpStmnt
-
-  case class ContinueStmnt(lvl: IntegerLiteral) extends JumpStmnt
-
-  case class BreakStmnt(lvl: IntegerLiteral) extends JumpStmnt
-
-  case class ReturnStmnt(exp: Option[Expression]) extends JumpStmnt
-
-  case class ThrowStmnt(exp: Expression) extends JumpStmnt
+  case class GotoStmnt(name: Name, override val text: Option[Text]) extends JumpStmnt with EndTagElement
+  case class ContinueStmnt(lvl: IntegerLiteral, override val text: Option[Text]) extends JumpStmnt with EndTagElement
+  case class BreakStmnt(lvl: IntegerLiteral, override val text: Option[Text]) extends JumpStmnt with EndTagElement
+  case class ReturnStmnt(exp: Option[Expression], override val text: Option[Text]) extends JumpStmnt with EndTagElement
+  case class ThrowStmnt(exp: Expression, override val text: Option[Text]) extends JumpStmnt with EndTagElement
 
   case class TryStmnt(stmnt: CompoundStmnt, catches: Seq[CatchClause], fin: Option[CompoundStmnt]) extends Statement
-
   case class CatchClause(qualifiedName: QualifiedName, name: SimpleNameVar, stmnt: CompoundStmnt)
 
   case class DeclareStmnt() extends Statement
@@ -73,9 +61,7 @@ object Ast {
   sealed abstract class Declaration extends Statement
 
   case class ConstDecl(elems: Seq[ConstElement]) extends Declaration
-
   case class ConstElement(name: Name, exp: Expression)
-
   case class ClassDecl(mod: Option[ClassModifier], name: Name, extend: Option[QualifiedName], impl: Option[Seq[QualifiedName]], body: Seq[MemberDecl]) extends Declaration
 
   trait MemberDecl

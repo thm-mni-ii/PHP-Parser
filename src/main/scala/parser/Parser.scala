@@ -7,19 +7,41 @@ import StatementParser._
 
 object PHPParser {
 
-  def parser = scriptTag ~ statement.rep ~ End
+  var isTagProcessed = true
+
+  def phpParser : P[Script] = {
+    isTagProcessed = true
+    P(text ~ normalStartTag.? ~ statement.rep ~ End).map(t => {
+      isTagProcessed = t._2.isDefined
+      Script(t._1, t._3)
+    })
+  }
+
+  val normalStartTag = P("<?php".!)
+
+  val echoStartTag = P("<?=".!)
+
+  val endTag = P("?>")
 
   //def script : P[Script] = P((scriptSection | textSection).rep)
 
   //def scriptSection : P[ScriptSection] =
 
-  val scriptTag : Parser[Boolean] = "<?php".!.map(_ => false) | "<?=".!.map(_ => true)
+  val startTag = P(normalStartTag | echoStartTag)
 
-  val textSection : Parser[Text] = P((!scriptTag ~ AnyChar.!).rep).map(t => Text(t.mkString))
+  def parse(toParse: String) = phpParser.parse(toParse)
 
-  def parse(toParse: String) = parser.parse(toParse)
+  val text : P[Text] = P((!startTag ~ AnyChar.!).rep).map(t => Text(t.mkString))
 
-  val nonDigit = P(CharIn(('a' to 'z') ++ ('A' to 'Z') ++ ('\u0080' to '\u00ff') :+ '_').!)
+  def semicolonFactory : P[Option[Text]] = P(";".!.map(_ => None) |
+    ("?>" ~ text ~ normalStartTag.?).map(t => {
+      isTagProcessed = t._2.isDefined
+      Some(t._1)
+    })
+  )
+
+  val nonDigitSeq = ('a' to 'z') ++ ('A' to 'Z') ++ ('\u0080' to '\u00ff') :+ '_'
+  val nonDigit = P(CharIn(nonDigitSeq).!)
   val name : P[Name] = P(nonDigit ~~ (nonDigit | digit).repX).map(t => Name(t._1 + t._2.mkString))
 
   val variableName : P[SimpleNameVar] = P("$" ~~ name).map(SimpleNameVar)
@@ -51,7 +73,7 @@ object PHPParser {
   def randomOutside = P(CharsWhile(charSeqOutside.indexOf(_) == -1, 1))
 
   val assignmentOp = P(StringIn("**", "*", "/", "+", "-", ".", "<<", ">>", "&", "^", "|").!)
-  val equalityOp = P(StringIn("===", "==", "!==", "!=", "<>").!).log()
+  val equalityOp = P(StringIn("===", "==", "!==", "!=", "<>").!)
   val relationalOp = P(StringIn("<=>", "<=", ">=", "<", ">").!)
   val unaryOp = P(CharIn("+-!~").!)
 
