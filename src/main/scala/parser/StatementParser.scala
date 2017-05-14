@@ -87,8 +87,16 @@ object StatementParser {
   val tryStmnt : P[TryStmnt] = P("try" ~ compoundStmnt ~ catchClause.rep ~ ("finally" ~/ compoundStmnt).?)
     .map(t => TryStmnt(t._1, t._2, t._3))
 
-  val declareStmnt : P[DeclareStmnt] = P("----").map(_ => DeclareStmnt())
-  //TODO declareStmnt
+  val declareDeclarative : P[DeclareDeclarative.Value] =
+    P("ticks".!.map(_ => DeclareDeclarative.TICKS ) |
+    "encoding".!.map(_ => DeclareDeclarative.ENCODING) |
+    "strict_types".!.map(_ => DeclareDeclarative.STRICT_TYPES))
+
+  val declareBody : P[(Seq[Statement], Option[Text])] =
+    P(":" ~ statement.rep ~ "enddeclare" ~ semicolonFactory | statement.map(t => (Seq(t), None)))
+
+  val declareStmnt : P[DeclareStmnt] = P("declare" ~/ "(" ~ declareDeclarative ~ "=" ~ literal ~ ")" ~/ declareBody)
+    .map(t => DeclareStmnt(t._1, t._2, t._3._1, t._3._2))
 
   val constElem : P[ConstElement] = P(name ~ "=" ~ expression)
     .map(t => ConstElement(t._1, t._2))

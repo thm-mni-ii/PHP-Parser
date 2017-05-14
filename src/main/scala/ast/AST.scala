@@ -56,7 +56,10 @@ object Ast {
   case class TryStmnt(stmnt: CompoundStmnt, catches: Seq[CatchClause], fin: Option[CompoundStmnt]) extends Statement
   case class CatchClause(qualifiedName: QualifiedName, name: SimpleNameVar, stmnt: CompoundStmnt)
 
-  case class DeclareStmnt() extends Statement
+  case class DeclareStmnt(decl: DeclareDeclarative.Value, declLiteral: Literal, stmnts: Seq[Statement], override val text: Option[Text]) extends Statement with EndTagElement
+  case object DeclareDeclarative extends Enumeration {
+    val TICKS, ENCODING, STRICT_TYPES = Value
+  }
 
   sealed abstract class Declaration extends Statement
 
