@@ -211,7 +211,7 @@ object Ast {
   case class ShellCommandExp(content: String) extends Expression
   case class CastExp(cast: CastType.Value, exp: Expression) extends Expression
 
-  object CastType extends Enumeration {
+  case object CastType extends Enumeration {
     val ARRAY, BINARY, BOOL, BOOLEAN, DOUBLE, INT, INTEGER, FLOAT, OBJECT, REAL, STRING, UNSET = Value
   }
 
@@ -231,13 +231,13 @@ object Ast {
   case class SimpleAccessVar(acc: SimpleVar) extends SimpleVar
   case class SimpleExpVar(exp: Expression) extends SimpleVar
   case class ScopeAccessVar(scope: ScopeType.Value) extends Variable
-  object ScopeType extends Enumeration {
+  case object ScopeType extends Enumeration {
     val SELF, PARENT, STATIC = Value
   }
 
   case class QualifiedName(nType: NamespaceType.Value, namespace: Seq[Name], name: Name)
 
-  object NamespaceType extends Enumeration {
+  case object NamespaceType extends Enumeration {
     val RELATIVE, LOCAL, GLOBAL = Value
   }
 
