@@ -40,7 +40,7 @@ object Ast {
   case class DoStmnt(cond: Expression, stmnt: Statement, override val text: Option[Text]) extends IterationStmnt with EndTagElement
   case class ForExpressionList(exps: Seq[Expression], override val text: Option[Text]) extends EndTagElement
   case class ForStmnt(init: ForExpressionList, control: ForExpressionList, end: ForExpressionList, stmnts: Seq[Statement], override val text: Option[Text]) extends IterationStmnt with EndTagElement
-  case class ForeachStmnt() extends IterationStmnt
+  case class ForeachStmnt(collection: Expression, key: Option[Expression], valueDesVar: Boolean, value: Expression, stmnts: Seq[Statement], override val text: Option[Text]) extends IterationStmnt with EndTagElement
   sealed abstract class ForeachValue
   case class ForeachValueExp(exp: Expression, designateVar: Boolean) extends ForeachValue
   case class ForeachValueSeq(Seq: SeqIntrinsic) extends ForeachValue

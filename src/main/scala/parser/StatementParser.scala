@@ -6,8 +6,6 @@ import ExpressionParser.expression
 import PHPParser._
 import ast.Ast._
 
-import scala.collection.immutable.Stream.Empty
-
 object StatementParser {
 
   def statement : P[Statement] = if(isTagProcessed) possibleStatements else echoTagStmnt
@@ -70,10 +68,13 @@ object StatementParser {
 
   val forStmnt : P[ForStmnt] = P("for" ~/ "(" ~ forExpressionList ~ forExpressionList ~ expression.rep(sep=",") ~ ")" ~ forBody).map(t => ForStmnt(t._1, t._2, ForExpressionList(t._3, None), t._4._1, t._4._2))
 
-  val foreachBody : P[Seq[Statement]] = P((":" ~ statement.rep ~ "foreach" ~ ";") | statement.map(Seq(_)))
+  val foreachBody : P[(Seq[Statement], Option[Text])] =
+    P(":" ~ statement.rep ~ "endforeach" ~ semicolonFactory | statement.map(t => (Seq(t), None)))
 
-  val foreachStmnt : P[ForeachStmnt] = P("----").map(_ => ForeachStmnt())
-  //TODO missing foreach
+  val foreachStmnt : P[ForeachStmnt] = P("foreach" ~/ "(" ~ expression ~ "as" ~ (
+    ("&" ~ expression).map(t => (None, true, t)) |
+      (expression ~ ("=>" ~ "&".!.? ~ expression).?).map(t => if(t._2.isDefined) (Some(t._1), t._2.get._1.isDefined, t._2.get._2) else (None, false, t._1))) ~ ")" ~/ foreachBody)
+    .map(t => ForeachStmnt(t._1, t._2._1, t._2._2, t._2._3, t._3._1, t._3._2))
 
   val jumpStmnt : P[JumpStmnt] = P(("goto" ~/ name ~ semicolonFactory).map(t => GotoStmnt(t._1, t._2)) |
     ("continue" ~/ integerLiteral ~ semicolonFactory).map(t => ContinueStmnt(t._1, t._2)) |
