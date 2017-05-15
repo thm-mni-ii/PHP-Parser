@@ -1,13 +1,13 @@
 package parser
 
-import fastparse.noApi._
-import WsAPI._
-import PHPParser._
-import ast.Ast._
+import ast.Expressions._
 
-/**
-  * Created by tobias on 03.05.17.
-  */
+import parser.Basic._
+
+import fastparse.noApi._
+import parser.WsAPI._
+
+
 object ExpressionParser {
   val expression : P[Expression] = P(yieldExp | requireExp | requireOnceExp | includeExp | includeOnceExp | logicalOrExpr2).log()
 
@@ -142,4 +142,29 @@ object ExpressionParser {
   val singleVariable : P[Variable] = P(simpleVariable | stringLiteralVar | scopeAccVar | qualifiedNameVarWithCall | expressionVarWithCall | arrayCreationVar)
   val variable : P[Variable] = P(singleVariable ~ (memberCallStaticAccFactory | arrayAccFactory | blockAccFactory | memberPropertyAccFactory).rep).map(t => t._2.foldLeft(t._1)((a,b) => b(a))).log()
 
+  //unused part
+
+  //def expression : P[Expression] = exp1.map(_ => SpecialExp())
+
+  def exp1 : P[Expression] = P((randomOutside.? ~ "(" ~ exp2.? ~ ")" ~ exp1.?).map(_ => SpecialExp()) |
+    (randomOutside.? ~ "{" ~ exp2.? ~ "}" ~  exp1.?) .map(_ => SpecialExp()) |
+    (randomOutside.? ~ "[" ~ exp2.? ~ "]" ~ exp1.?) .map(_ => SpecialExp()) |
+    (randomOutside ~ (":".rep(1) ~ exp1).?) .map(_ => SpecialExp()))
+
+  def exp2 : P[Expression] = P((random.? ~ "(" ~ exp2.? ~ ")" ~ exp2.?) .map(_ => SpecialExp()) |
+    (random.? ~ "{" ~ exp2.? ~ "}" ~ exp2.?) .map(_ => SpecialExp()) |
+    (random.? ~ "[" ~ exp2.? ~ "]" ~ exp2.?) .map(_ => SpecialExp()) |
+    (random ~ (":".rep(1) ~ exp2).?) .map(_ => SpecialExp()))
+
+  //val random1 : P[Expression] = """[^\(\)\{\}\[\]:]+""".r ^^^ SpecialExp()
+
+  //val randomOutside1 : P[Expression] = """[^\(\)\{\}\[\]:,;]+""".r ^^^ SpecialExp()
+
+  def charSeqInside = "(){}[]:"
+  def charSeqOutside = "(){}[]:,;"
+
+  def random = P(CharsWhile(charSeqInside.indexOf(_) == -1, 1))
+  def randomOutside = P(CharsWhile(charSeqOutside.indexOf(_) == -1, 1))
+
+  //end unused part
 }

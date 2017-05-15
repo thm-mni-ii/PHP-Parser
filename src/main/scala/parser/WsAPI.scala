@@ -1,8 +1,5 @@
 package parser
 
-/**
-  * Created by tobias on 02.05.17.
-  */
 object WsAPI extends fastparse.WhitespaceApi.Wrapper(Lexical.ws)
 
 object Lexical {

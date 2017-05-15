@@ -1,35 +1,24 @@
 package parser
 
+import ast.Basic._
+import ast.Expressions.{ScopeType, SimpleNameVar}
+import ast.Statements._
+
+import parser.StatementParser.statement
+import parser.PHPParser._
+
 import fastparse.noApi._
-import WsAPI._
-import ast.Ast._
-import StatementParser._
+import parser.WsAPI._
 
-object PHPParser {
+object Basic {
 
-  var isTagProcessed = true
-
-  def phpParser : P[Script] = {
+  def script : P[Script] = {
     isTagProcessed = true
     P(text ~ normalStartTag.? ~ statement.rep ~ End).map(t => {
       isTagProcessed = t._2.isDefined
       Script(t._1, t._3)
     })
   }
-
-  val normalStartTag = P("<?php".!)
-
-  val echoStartTag = P("<?=".!)
-
-  val endTag = P("?>")
-
-  //def script : P[Script] = P((scriptSection | textSection).rep)
-
-  //def scriptSection : P[ScriptSection] =
-
-  val startTag = P(normalStartTag | echoStartTag)
-
-  def parse(toParse: String) = phpParser.parse(toParse)
 
   val text : P[Text] = P((!startTag ~ AnyChar.!).rep).map(t => Text(t.mkString))
 
@@ -39,6 +28,11 @@ object PHPParser {
       Some(t._1)
     })
   )
+
+  val normalStartTag = P("<?php".!)
+  val echoStartTag = P("<?=".!)
+  val endTag = P("?>")
+  val startTag = P(normalStartTag | echoStartTag)
 
   val nonDigitSeq = ('a' to 'z') ++ ('A' to 'Z') ++ ('\u0080' to '\u00ff') :+ '_'
   val nonDigit = P(CharIn(nonDigitSeq).!)
@@ -52,25 +46,14 @@ object PHPParser {
       else QualifiedName(NamespaceType.RELATIVE, t._2, t._3)
     ))
 
-  def possibleType : P[PossibleTypes] = P("void").map(_ => VoidType) | typeDecl
-
-  def arrayType = P("array").map(_ => ArrayType)
-  def callableType = P("callable").map(_ => CallableType)
-  def iterableType = P("iterable").map(_ => IterableType)
-  def boolType = P("bool").map(_ => BoolType)
-  def floatType = P("float").map(_ => FloatType)
-  def intType = P("int").map(_ => IntType)
-  def stringType = P("string").map(_ => StringType)
-
-  def typeDecl : P[TypeDecl] = arrayType | callableType |iterableType | boolType | floatType | intType | stringType | qualifiedName.map(QualifiedType)
-
-  //def expression : P[Expression] = exp1.map(_ => SpecialExp())
-
-  def charSeqInside = "(){}[]:"
-  def charSeqOutside = "(){}[]:,;"
-
-  def random = P(CharsWhile(charSeqInside.indexOf(_) == -1, 1))
-  def randomOutside = P(CharsWhile(charSeqOutside.indexOf(_) == -1, 1))
+  val arrayType = P("array").map(_ => ArrayType)
+  val callableType = P("callable").map(_ => CallableType)
+  val iterableType = P("iterable").map(_ => IterableType)
+  val boolType = P("bool").map(_ => BoolType)
+  val floatType = P("float").map(_ => FloatType)
+  val intType = P("int").map(_ => IntType)
+  val stringType = P("string").map(_ => StringType)
+  val voidType = P("void").map(_ => VoidType)
 
   val assignmentOp = P(StringIn("**", "*", "/", "+", "-", ".", "<<", ">>", "&", "^", "|").!)
   val equalityOp = P(StringIn("===", "==", "!==", "!=", "<>").!)
@@ -80,8 +63,6 @@ object PHPParser {
   val selfScope = P("self").map(_ => ScopeType.SELF)
   val parentScope = P("parent").map(_ => ScopeType.PARENT)
   val staticScope = P("static").map(_ => ScopeType.STATIC)
-
-
 
   val sqEscapeSequence = P("\\".! ~~ AnyChar.!).map(t => t._1 + t._2)
   val sqUnescapedSequence = P(CharsWhile(!"\\'".contains(_)).!)
@@ -114,18 +95,4 @@ object PHPParser {
     (digit.repX(1) ~~ (exponentPart.map(e => (Some(e), "")) | ("." ~~ digit.repX ~~ exponentPart.?).map(t => (t._2, t._1.mkString)))).map(t => FloatingLiteral(t._1.mkString, t._2._2, t._2._1)))
 
   val literal : P[Literal] = P(integerLiteral | floatingLiteral | stringLiteral)
-
-  //val random1 : P[Expression] = """[^\(\)\{\}\[\]:]+""".r ^^^ SpecialExp()
-
-  //val randomOutside1 : P[Expression] = """[^\(\)\{\}\[\]:,;]+""".r ^^^ SpecialExp()
-
-  def exp1 : P[Expression] = P((randomOutside.? ~ "(" ~ exp2.? ~ ")" ~ exp1.?).map(_ => SpecialExp()) |
-    (randomOutside.? ~ "{" ~ exp2.? ~ "}" ~  exp1.?) .map(_ => SpecialExp()) |
-    (randomOutside.? ~ "[" ~ exp2.? ~ "]" ~ exp1.?) .map(_ => SpecialExp()) |
-    (randomOutside ~ (":".rep(1) ~ exp1).?) .map(_ => SpecialExp()))
-
-  def exp2 : P[Expression] = P((random.? ~ "(" ~ exp2.? ~ ")" ~ exp2.?) .map(_ => SpecialExp()) |
-    (random.? ~ "{" ~ exp2.? ~ "}" ~ exp2.?) .map(_ => SpecialExp()) |
-    (random.? ~ "[" ~ exp2.? ~ "]" ~ exp2.?) .map(_ => SpecialExp()) |
-    (random ~ (":".rep(1) ~ exp2).?) .map(_ => SpecialExp()))
 }
