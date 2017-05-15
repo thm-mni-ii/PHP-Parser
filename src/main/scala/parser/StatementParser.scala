@@ -2,12 +2,10 @@ package parser
 
 import ast.Statements._
 import ast.Expressions.Expression
-import ast.Basic.Text
-
+import ast.Basic.{Name, Text}
 import parser.ExpressionParser.expression
 import parser.PHPParser._
 import parser.Basic._
-
 import fastparse.noApi._
 import parser.WsAPI._
 
@@ -171,8 +169,22 @@ object StatementParser {
   val namespaceDefStmnt : P[NamespaceDef] = P(("namespace" ~ name ~ ";").map(t => NamespaceDef(Some(t), None)) |
     ("namespace" ~ name.? ~ compoundStmnt).map(t => NamespaceDef(t._1, Some(t._2))))
 
-  val namespaceUseDeclStmnt : P[NamespaceUseDecl] = P("----").map(_ => NamespaceUseDecl())
-  //TODO namespace
+  val namespaceUseType : P[NamespaceUseType.Value] = P("function".!.map(_ => NamespaceUseType.FUNCTION) |
+    "const".!.map(_ => NamespaceUseType.CONST))
+
+  val namespaceName : P[Seq[Name]] = P(name.rep(min=0, sep="\\"))
+
+  val namespaceUseDeclStmnt = P("use" ~/
+    (namespaceUseType ~ "\\".? ~ namespaceName ~ "\\" ~ "{" ~ (namespaceName ~ ("as" ~ name).?)
+      .map(t => NamespaceUseClause(None, Right(t._1), t._2)).rep(min=1, sep=",") ~ "}")
+      .map(t => NamespaceUseDecl(Some(t._1),Some(t._2),t._3, None)) |
+    (namespaceUseType.? ~ (qualifiedName ~ ("as" ~ name).?)
+      .map(t => NamespaceUseClause(None, Left(t._1), t._2)).rep(min=1, sep=",") ~ semicolonFactory)
+      .map(t => NamespaceUseDecl(t._1, None, t._2, t._3)) |
+    ("\\".? ~ namespaceName ~ "\\" ~ "{" ~ (namespaceUseType.? ~ namespaceName ~ ("as" ~ name).?)
+      .map(t => NamespaceUseClause(t._1, Right(t._2), t._3)).rep(min=1, sep=",") ~ "}")
+      .map(t => NamespaceUseDecl(None, Some(t._1), t._2, None))
+  )
 
   val globalDeclStmnt : P[GlobalDecl] = P("global" ~ variableName.rep(sep=",") ~ ";")
     .map(GlobalDecl)

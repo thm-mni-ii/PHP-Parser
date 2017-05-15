@@ -87,7 +87,11 @@ object Statements {
 
   case class TraitDecl(name: Name, body: Seq[MemberDecl]) extends Declaration
 
-  case class NamespaceUseDecl() extends Declaration
+  case class NamespaceUseDecl(useType: Option[NamespaceUseType.Value], namespaceName: Option[Seq[Name]], clauses: Seq[NamespaceUseClause], override val text: Option[Text]) extends Declaration with EndTagElement
+  case class NamespaceUseClause(useType: Option[NamespaceUseType.Value], from: Either[QualifiedName, Seq[Name]], as: Option[Name])
+  case object NamespaceUseType extends Enumeration {
+    val FUNCTION, CONST = Value
+  }
 
   case class GlobalDecl(vars: Seq[SimpleNameVar]) extends Declaration
 
