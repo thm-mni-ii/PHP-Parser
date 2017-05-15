@@ -9,7 +9,7 @@ import parser.WsAPI._
 
 
 object ExpressionParser {
-  val expression : P[Expression] = P(yieldExp | requireExp | requireOnceExp | includeExp | includeOnceExp | logicalOrExpr2).log()
+  val expression : P[Expression] = P(yieldExp | requireExp | requireOnceExp | includeExp | includeOnceExp | logicalOrExpr2)
 
   val requireExp : P[RequireExp] = P("require" ~ expression).map(RequireExp)
 
@@ -22,20 +22,20 @@ object ExpressionParser {
   val yieldExp : P[Expression] = P(("yield" ~ "from" ~ arrayElementInitializer).map(YieldFromExp) |
     ("yield" ~ expression).map(YieldExp))
 
-  val logicalOrExpr2 : P[Expression] = P(logicalXOrExp.rep(sep="or", min=1)).map(_.reduceLeft(LogicalOrExp2)).log()
+  val logicalOrExpr2 : P[Expression] = P(logicalXOrExp.rep(sep="or", min=1)).map(_.reduceLeft(LogicalOrExp2))
 
-  val logicalXOrExp : P[Expression] = P(logicalAndExp2.rep(sep="xor", min=1)).map(_.reduceLeft(LogicalXOrExp)).log()
+  val logicalXOrExp : P[Expression] = P(logicalAndExp2.rep(sep="xor", min=1)).map(_.reduceLeft(LogicalXOrExp))
 
   val logicalAndExp2 : P[Expression] = P(assignmentCondExp.rep(sep="and", min=1)).map(_.reduceLeft(LogicalAndExp2))
 
   val conditionalExpFactory : P[Expression => Expression] = P(("??" ~ expression).map(e => (x: Expression) => CoalesceExp(x,e)) |
     ("?" ~ expression.? ~ ":" ~ assignmentCondExp).map(e => (x) => TernaryExp(x,e._1, e._2)))
 
-  val assignmentCondExp : P[Expression] = P((logicalOrExp ~ conditionalExpFactory).map(t => t._2(t._1)).log() |
+  val assignmentCondExp : P[Expression] = P((logicalOrExp ~ conditionalExpFactory).map(t => t._2(t._1)) |
     //(listIntrinsic ~ "=" ~ assignmentExp).map(t => SimpleAssignmentExp(t._1, t._2)) |
-    (variable ~ assignmentFactory).map(t => t._2(t._1)).log() | logicalOrExp)
+    (variable ~ assignmentFactory).map(t => t._2(t._1)) | logicalOrExp)
 
-  val assignmentFactory : P[Variable => Expression] = P(("=" ~ "&".!.? ~ assignmentCondExp).map(e => (x: Variable) => SimpleAssignmentExp(e._1.isDefined, x, e._2)).log() |
+  val assignmentFactory : P[Variable => Expression] = P(("=" ~ "&".!.? ~ assignmentCondExp).map(e => (x: Variable) => SimpleAssignmentExp(e._1.isDefined, x, e._2)) |
     (assignmentOp ~~ "=" ~ assignmentCondExp).map(e => (x: Variable) => CompoundAssignmentExp(e._1, x, e._2)))
 
   val logicalOrExp: P[Expression] = P(logicalAndExp.rep(sep="||", min=1)).map(_.reduceLeft(LogicalOrExp))
@@ -47,7 +47,7 @@ object ExpressionParser {
   val equalityExp: P[Expression] = P(relationalExp ~ (equalityOp ~ relationalExp).rep).map(t => t._2.foldLeft(t._1)((exp, op) => EqualityExp(op._1, exp, op._2)))
   val relationalExp: P[Expression] = P(shiftExp ~ (relationalOp ~ shiftExp).rep).map(t => t._2.foldLeft(t._1)((exp, op) => RelationalExp(op._1, exp, op._2)))
 
-  val shiftExp: P[Expression] = P(additiveExp ~ shiftFactory.rep).map(t => t._2.foldLeft(t._1)((exp, op) => op(exp))).log()
+  val shiftExp: P[Expression] = P(additiveExp ~ shiftFactory.rep).map(t => t._2.foldLeft(t._1)((exp, op) => op(exp)))
   val shiftFactory : P[Expression => Expression] = P(("<<" ~ additiveExp).map(e => (x: Expression) => LShiftExp(x, e)) | (">>" ~ additiveExp).map(e => (x: Expression) => RShiftExp(x, e)))
 
   val additiveExp: P[Expression] = P(multExp ~ additiveFactory.rep).map(t => t._2.foldLeft(t._1)((exp, op) => op(exp)))
@@ -58,10 +58,10 @@ object ExpressionParser {
 
   val exponentiationExp: P[Expression] = P(instanceOfExp ~ ("**" ~ expression).?).map(t => if(t._2.isDefined) ExponentiationExp(t._1, t._2.get) else t._1)
 
-  val instanceOfExp : P[Expression] = P(unaryExp ~ ("instanceof" ~ (expression.map(Left(_)) | qualifiedName.map(Right(_)))).?).map(t => if(t._2.isDefined) InstanceOfExp(t._1, t._2.get) else t._1).log()
+  val instanceOfExp : P[Expression] = P(unaryExp ~ ("instanceof" ~ (expression.map(Left(_)) | qualifiedName.map(Right(_)))).?).map(t => if(t._2.isDefined) InstanceOfExp(t._1, t._2.get) else t._1)
 
   val unaryExp : P[Expression] = P(prefixIncrementExp | prefixDecrementExp |
-    unaryOpExp | errorControlExp | shellCommandExp | castExp | postfixExp).log()
+    unaryOpExp | errorControlExp | shellCommandExp | castExp | postfixExp)
 
   val prefixIncrementExp : P[Expression] = P("++" ~ variable).map(PrefixIncrementExp)
 
@@ -111,15 +111,15 @@ object ExpressionParser {
     ("$" ~ "{" ~ expression ~ "}").map(SimpleExpVar) | variableName)
 
   val scopeAccVar : P[ScopeAccessVar] = P(selfScope | parentScope | staticScope).map(ScopeAccessVar)
-  val qualifiedNameVar : P[QualifiedNameVar] = P(qualifiedName).map(QualifiedNameVar).log()
+  val qualifiedNameVar : P[QualifiedNameVar] = P(qualifiedName).map(QualifiedNameVar)
 
   val memberName : P[MemberName] = P(name.map(NameMember) | simpleVariable.map(SimpleVarMember) | ("{" ~ expression ~ "}").map(ExpMember))
 
-  val argumentExpressionList : P[Seq[ArgumentExpression]] = P(argumentExp.rep(sep=",")).log()
+  val argumentExpressionList : P[Seq[ArgumentExpression]] = P(argumentExp.rep(sep=","))
 
   val argumentExp: P[ArgumentExpression] = P("...".!.? ~ assignmentCondExp).map(t => ArgumentExpression(t._1.isDefined, t._2))
 
-  val stringLiteralVar : P[Variable] = P(stringLiteral).map(StringLiteralVar).log()
+  val stringLiteralVar : P[Variable] = P(stringLiteral).map(StringLiteralVar)
 
   val expressionVar : P[ExpressionVar] = P("(" ~ expression ~ ")").map(ExpressionVar)
 
@@ -140,7 +140,7 @@ object ExpressionParser {
   val expressionVarWithCall : P[Variable] = P(expressionVar ~ directCallAccFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1)
 
   val singleVariable : P[Variable] = P(simpleVariable | stringLiteralVar | scopeAccVar | qualifiedNameVarWithCall | expressionVarWithCall | arrayCreationVar)
-  val variable : P[Variable] = P(singleVariable ~ (memberCallStaticAccFactory | arrayAccFactory | blockAccFactory | memberPropertyAccFactory).rep).map(t => t._2.foldLeft(t._1)((a,b) => b(a))).log()
+  val variable : P[Variable] = P(singleVariable ~ (memberCallStaticAccFactory | arrayAccFactory | blockAccFactory | memberPropertyAccFactory).rep).map(t => t._2.foldLeft(t._1)((a,b) => b(a)))
 
   //unused part
 

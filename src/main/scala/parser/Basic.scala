@@ -75,7 +75,7 @@ object Basic {
   val dqStringLiteral = P(CharIn("bB").!.? ~ "\"" ~~ dqCharSequence ~~ "\"").map(t => DQStringLiteral(t._1, t._2))
   //TODO dq's are wrong
 
-  val stringLiteral : P[StringLiteral] = P(sqStringLiteral | dqStringLiteral).log()
+  val stringLiteral : P[StringLiteral] = P(sqStringLiteral | dqStringLiteral)
 
   val digit = P(CharIn("0123456789").!)
   val nonZeroDigit = P(CharIn("123456789").!)
