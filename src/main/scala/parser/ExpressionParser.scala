@@ -21,7 +21,7 @@ object ExpressionParser {
 
   val includeOnceExp : P[IncludeOnceExp] = P("include_once" ~ expression).map(IncludeOnceExp)
 
-  val yieldExp : P[Expression] = P(("yield" ~~ ws ~ "from" ~ arrayElementInitializer).map(YieldFromExp) |
+  val yieldExp : P[Expression] = P(("yield" ~~ ws ~ "from" ~ arrayElement).map(YieldFromExp) |
     ("yield" ~ expression).map(YieldExp))
 
   val logicalOrExpr2 : P[Expression] = P(logicalXOrExp.rep(sep="or", min=1)).map(_.reduceLeft(LogicalOrExp2))
@@ -95,12 +95,10 @@ object ExpressionParser {
     "++".!.map(_ => (x) => PostfixIncrementExp(x)) |
     "--".!.map(_ => (x) => PostfixDecrementExp(x)))
 
-  val postfixExp : P[Expression] = P(primaryExpWithoutVariable | cloneExp | objectCreationExp |
+  val postfixExp : P[Expression] = P(primaryExpWithoutVariable | cloneExp |
     (variable ~ postfixOperatorFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1))
 
   val cloneExp : P[Expression] = P("clone" ~ expression).map(CloneExp)
-
-  val arrayElementInitializer : P[ArrayElementInitializer] = P("hi".!.map(_ => ArrayElementInitializer(None, SpecialExp(), true)))
 
   val objectCreationExp : P[Expression] = P("new" ~~ ws ~
     (("class" ~~ &("(" | "{" | ws) ~ ("(" ~ argumentExp.rep ~ ")").? ~ classDeclBody)
@@ -110,12 +108,11 @@ object ExpressionParser {
   )
 
   val primaryExpWithoutVariable : P[Expression] = P(classConstAccExp | constAccExp |
-    literal | arrayCreationExp | intrinsic | anonymousFuncExp | enclosedExp)
+    literal | intrinsic | anonymousFuncExp | enclosedExp)
 
   //TODO
   val classConstAccExp : P[Expression] = P(Fail)
   val constAccExp : P[Expression] = P(Fail)
-  val arrayCreationExp : P[Expression] = P(Fail)
   val intrinsicOperator : P[Expression] = P(Fail)
   val intrinsicConstruct : P[Expression] = P(echoIntrinsic | Fail)
   val echoIntrinsic : P[EchoIntrinsic] = P("echo" ~ expression.rep(min=1, sep=",")).map(EchoIntrinsic)
@@ -141,7 +138,14 @@ object ExpressionParser {
 
   val expressionVar : P[ExpressionVar] = P("(" ~ expression ~ ")").map(ExpressionVar)
 
-  val arrayCreationVar = P(Fail)
+  val arrayElement : P[ArrayElement] = P(("&" ~ expression).map(ArrayElement(None, _, true)) |
+    (expression ~ ("=>" ~ "&".!.? ~ expression).?).map(t =>
+      if(t._2.isDefined) ArrayElement(Some(t._1), t._2.get._2, t._2.get._1.isDefined)
+      else ArrayElement(None, t._1, false))
+  )
+
+  val arrayCreationVar : P[ArrayCreationVar] = P("array" ~ "(" ~ !(",") ~ arrayElement.rep(sep=",") ~ ",".? ~ ")" |
+    "[" ~ !"," ~ arrayElement.rep(sep=",") ~ ",".? ~ "]").map(ArrayCreationVar)
 
   val memberCallStaticAccFactory : P[Variable => Variable] = P("::" ~ memberName ~ "(" ~ argumentExpressionList ~ ")").map(t => (x: Variable) => MemberCallStaticAcc(x, t._1, t._2))
   val simpleVarStaticAccFactory : P[Variable => Variable] = P("::" ~ simpleVariable).map(t => (x: Variable) => SimpleVarStaticAcc(x, t))
@@ -157,7 +161,7 @@ object ExpressionParser {
   val qualifiedNameVarWithCall : P[Variable] = P(qualifiedNameVar ~ directCallAccFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1)
   val expressionVarWithCall : P[Variable] = P(expressionVar ~ directCallAccFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1)
 
-  val singleVariable : P[Variable] = P(simpleVariable | stringLiteralVar | scopeAccVar | qualifiedNameVarWithCall | expressionVarWithCall | arrayCreationVar)
+  val singleVariable : P[Variable] = P(simpleVariable | arrayCreationVar | stringLiteralVar | scopeAccVar | qualifiedNameVarWithCall | expressionVarWithCall)
   val variable : P[Variable] = P(singleVariable ~ (memberCallStaticAccFactory | arrayAccFactory | blockAccFactory | memberPropertyAccFactory).rep).map(t => t._2.foldLeft(t._1)((a,b) => b(a)))
 
   //unused part

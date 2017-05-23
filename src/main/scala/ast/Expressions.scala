@@ -12,7 +12,7 @@ object Expressions {
   case class RequireExp(exp: Expression) extends Expression
   case class RequireOnceExp(exp: Expression) extends Expression
   case class YieldExp(exp: Expression) extends Expression
-  case class YieldFromExp(a: ArrayElementInitializer) extends Expression
+  case class YieldFromExp(a: ArrayElement) extends Expression
   case class LogicalOrExp2(exp1: Expression, exp2: Expression) extends Expression
   case class LogicalXOrExp(exp1: Expression, exp2: Expression) extends Expression
   case class LogicalAndExp2(exp1: Expression, exp2: Expression) extends Expression
@@ -100,8 +100,6 @@ object Expressions {
   case class ArrayCreationVar(elems: Seq[ArrayElement]) extends Variable
   case class ArrayElement(key: Option[Expression], value: Expression, designateVar: Boolean)
   case class ArgumentExpression(isVariadic: Boolean, exp: Expression)
-
-  case class ArrayElementInitializer(key: Option[Expression], value: Expression, designateVar: Boolean)
 
   //unused
   case class SpecialExp() extends Expression
