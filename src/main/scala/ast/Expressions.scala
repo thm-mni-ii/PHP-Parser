@@ -48,7 +48,11 @@ object Expressions {
     val ARRAY, BINARY, BOOL, BOOLEAN, DOUBLE, INT, INTEGER, FLOAT, OBJECT, REAL, STRING, UNSET = Value
   }
 
-  case class ObjectCreationExp(designator: Expression) extends Expression //TODO
+  sealed abstract class Intrinsic extends Expression
+  case class EchoIntrinsic(exps: Seq[Expression]) extends Intrinsic
+
+  case class ObjectCreationExp(designator: Expression) extends Expression
+  case class AnonymousClassCreationExp()
   case class PostfixIncrementExp(va: Variable) extends Expression
 
   case class PostfixDecrementExp(va: Variable) extends Expression

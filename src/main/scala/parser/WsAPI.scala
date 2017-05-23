@@ -1,6 +1,6 @@
 package parser
 
-object WsAPI extends fastparse.WhitespaceApi.Wrapper(Lexical.ws)
+object WsAPI extends fastparse.WhitespaceApi.Wrapper(Lexical.whitespace)
 
 object Lexical {
   import fastparse.all._
@@ -8,12 +8,15 @@ object Lexical {
   val wsChars = P(CharIn("\u0020\u0009"))
   val newline = P(StringIn("\r\n", "\n", "\r"))
 
-  val lineComment = P(("//" | "#") ~ CharsWhile(c => c != '\n' && c != '\r') ~ (newline | End))
+  val lineCommentText = P(CharsWhile(c => c != '\n' && c != '\r' && c != '?') | !"?>" ~ AnyChar)
+  val lineComment = P(("//" | "#") ~ lineCommentText)
 
   val multilineText = P(CharsWhile(c => c != '*') | (!"*/" ~ AnyChar))
   val multiLineComment = P("/*" ~ multilineText.rep ~ ("*/" | End))
 
   val comment = P(lineComment | multiLineComment)
 
-  val ws = P(NoTrace((wsChars | newline | comment).rep))
+  val whitespace = P(NoTrace((wsChars | newline | comment).rep))
+
+  val ws = P(&(NoTrace(wsChars | newline | comment).rep(1)))
 }
