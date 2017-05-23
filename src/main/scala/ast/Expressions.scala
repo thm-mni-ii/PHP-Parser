@@ -1,6 +1,7 @@
 package ast
 
 import ast.Basic._
+import ast.Statements.ClassDecl
 
 object Expressions {
 
@@ -51,10 +52,10 @@ object Expressions {
   sealed abstract class Intrinsic extends Expression
   case class EchoIntrinsic(exps: Seq[Expression]) extends Intrinsic
 
-  case class ObjectCreationExp(designator: Expression) extends Expression
-  case class AnonymousClassCreationExp()
-  case class PostfixIncrementExp(va: Variable) extends Expression
+  case class InstanceCreationExp(designator: Either[QualifiedName, Expression], arguments: Option[Seq[ArgumentExpression]]) extends Expression
+  case class AnonymousClassCreationExp(decl: ClassDecl, arguments: Option[Seq[ArgumentExpression]]) extends Expression
 
+  case class PostfixIncrementExp(va: Variable) extends Expression
   case class PostfixDecrementExp(va: Variable) extends Expression
 
   case class CloneExp(exp: Expression) extends Expression

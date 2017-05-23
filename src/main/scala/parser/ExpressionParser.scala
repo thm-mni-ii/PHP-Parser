@@ -1,10 +1,10 @@
 package parser
 
 import ast.Expressions._
-
+import ast.Statements.ClassDecl
 import parser.Basic._
 import parser.Lexical.ws
-
+import parser.StatementParser.classDeclBody
 import fastparse.noApi._
 import parser.WsAPI._
 
@@ -101,8 +101,13 @@ object ExpressionParser {
   val cloneExp : P[Expression] = P("clone" ~ expression).map(CloneExp)
 
   val arrayElementInitializer : P[ArrayElementInitializer] = P("hi".!.map(_ => ArrayElementInitializer(None, SpecialExp(), true)))
-  val objectCreationExp : P[Expression] = P(Fail)
-  //TODO
+
+  val objectCreationExp : P[Expression] = P("new" ~~ ws ~
+    (("class" ~~ &("(" | "{" | ws) ~ ("(" ~ argumentExp.rep ~ ")").? ~ classDeclBody)
+      .map(t => AnonymousClassCreationExp(ClassDecl(None, None, t._2._1, t._2._2, t._2._3), t._1)) |
+    ((qualifiedName.map(Left(_)) | expression.map(Right(_))) ~ ("(" ~ argumentExp.rep ~ ")").?)
+      .map(t => InstanceCreationExp(t._1, t._2)))
+  )
 
   val primaryExpWithoutVariable : P[Expression] = P(classConstAccExp | constAccExp |
     literal | arrayCreationExp | intrinsic | anonymousFuncExp | enclosedExp)
