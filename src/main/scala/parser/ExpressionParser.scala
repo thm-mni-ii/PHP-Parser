@@ -21,8 +21,8 @@ object ExpressionParser {
 
   val includeOnceExp : P[IncludeOnceExp] = P("include_once" ~ expression).map(IncludeOnceExp)
 
-  val yieldExp : P[Expression] = P(("yield" ~~ ws ~ "from" ~ arrayElement).map(YieldFromExp) |
-    ("yield" ~ expression).map(YieldExp))
+  val yieldExp : P[Expression] = P(("yield" ~~ ws ~ "from" ~ expression).map(YieldFromExp) |
+    ("yield" ~ arrayElement).map(YieldExp))
 
   val logicalOrExpr2 : P[Expression] = P(logicalXOrExp.rep(sep="or", min=1)).map(_.reduceLeft(LogicalOrExp2))
 

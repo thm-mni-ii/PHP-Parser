@@ -11,8 +11,8 @@ object Expressions {
   case class IncludeOnceExp(exp: Expression) extends Expression
   case class RequireExp(exp: Expression) extends Expression
   case class RequireOnceExp(exp: Expression) extends Expression
-  case class YieldExp(exp: Expression) extends Expression
-  case class YieldFromExp(a: ArrayElement) extends Expression
+  case class YieldExp(a: ArrayElement) extends Expression
+  case class YieldFromExp(exp: Expression) extends Expression
   case class LogicalOrExp2(exp1: Expression, exp2: Expression) extends Expression
   case class LogicalXOrExp(exp1: Expression, exp2: Expression) extends Expression
   case class LogicalAndExp2(exp1: Expression, exp2: Expression) extends Expression
