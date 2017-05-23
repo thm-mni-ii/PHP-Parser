@@ -51,7 +51,7 @@ object Statements {
 
   case class ConstDecl(elems: Seq[ConstElement]) extends Declaration
   case class ConstElement(name: Name, exp: Expression)
-  case class ClassDecl(mod: Option[ClassModifier], name: Name, extend: Option[QualifiedName], impl: Option[Seq[QualifiedName]], body: Seq[MemberDecl]) extends Declaration
+  case class ClassDecl(mod: Option[ClassModifier], name: Option[Name], extend: Option[QualifiedName], impl: Option[Seq[QualifiedName]], body: Seq[MemberDecl]) extends Declaration
 
   trait MemberDecl
 

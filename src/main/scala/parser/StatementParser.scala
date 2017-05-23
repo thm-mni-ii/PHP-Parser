@@ -2,7 +2,7 @@ package parser
 
 import ast.Statements._
 import ast.Expressions.Expression
-import ast.Basic.{Name, Text}
+import ast.Basic.{Name, QualifiedName, Text}
 import parser.ExpressionParser.expression
 import parser.PHPParser._
 import parser.Basic._
@@ -13,7 +13,7 @@ object StatementParser {
 
   def statement : P[Statement] = if(isTagProcessed) possibleStatements else echoTagStmnt
 
-  private val possibleStatements : P[Statement] = P(compoundStmnt | namedLabelStmnt | selectionStmnt | selectionStmnt | iterationStmnt | jumpStmnt | tryStmnt |
+  private val possibleStatements : P[Statement] = P(compoundStmnt | namedLabelStmnt | selectionStmnt | iterationStmnt | jumpStmnt | tryStmnt |
       declareStmnt | constDeclStmnt | functionDefStmnt | classDeclStmnt | interfaceDeclStmnt | traitDeclStmnt |
       namespaceDefStmnt | namespaceUseDeclStmnt | globalDeclStmnt | functionStaticDeclStmnt | emptyStmnt | expStmnt)
 
@@ -33,7 +33,7 @@ object StatementParser {
   val selectionStmnt : P[SelectionStmnt] = P(ifStmnt | switchStmnt)
 
   private val ifBody : P[(Seq[Statement], Seq[(Expression, Seq[Statement])], Option[Seq[Statement]], Option[Text])] =
-    P((":" ~ (statement).rep(1) ~ ("elseif" ~ "(" ~ expression ~ ")" ~ ":" ~ statement.rep(1)).rep ~ ("else" ~ ":" ~ statement.rep).? ~ "endif" ~ semicolonFactory) |
+    P((":" ~ statement.rep(1) ~ ("elseif" ~ "(" ~ expression ~ ")" ~ ":" ~ statement.rep(1)).rep ~ ("else" ~ ":" ~ statement.rep).? ~ "endif" ~ semicolonFactory) |
       (statement ~ ("elseif" ~ "(" ~ expression ~ ")" ~ statement).rep ~ ("else" ~ statement).?).map(t => (Seq(t._1), t._2.map(e => (e._1, Seq(e._2))), t._3.map(Seq(_)), None)))
 
   val ifStmnt : P[IfStmnt] =
@@ -52,7 +52,7 @@ object StatementParser {
   private val defaultBlock : P[DefaultBlock] =
     P("default" ~/ (":".!.map(_ => Seq()) | emptyStmnt.map(Seq(_))) ~ statement.rep).map(t => DefaultBlock(t._1 ++ t._2))
 
-  val iterationStmnt : P[IterationStmnt] = P(whileStmnt | doStmnt | forStmnt | foreachStmnt)
+  val iterationStmnt : P[IterationStmnt] = P(whileStmnt | doStmnt | foreachStmnt | forStmnt)
 
   private val whileBody : P[(Seq[Statement], Option[Text])] =
     P((":" ~ statement.rep ~ "endwhile" ~ semicolonFactory) |
@@ -150,9 +150,11 @@ object StatementParser {
 
   val classMemberDecl : P[MemberDecl] = P(classConstDecl | propertyDecl | methodDecl | traitUseClause)
 
-  val classDeclStmnt : P[ClassDecl] = P(classMod.? ~ "class" ~/ name ~ ("extends" ~ qualifiedName).? ~
-      ("implements" ~ qualifiedName.rep(sep=",")).? ~ "{" ~/ classMemberDecl.rep ~ "}")
-      .map(t => ClassDecl(t._1, t._2, t._3, t._4, t._5))
+  val classDeclBody : P[(Option[QualifiedName], Option[Seq[QualifiedName]], Seq[MemberDecl])] = P(("extends" ~ qualifiedName).? ~
+    ("implements" ~ qualifiedName.rep(sep=",")).? ~ "{" ~ classMemberDecl.rep ~ "}")
+
+  val classDeclStmnt : P[ClassDecl] = P(classMod.? ~ "class" ~/ name ~ classDeclBody)
+      .map(t => ClassDecl(t._1, Some(t._2), t._3._1, t._3._2, t._3._3))
 
   val interfaceMemberDecl : P[MemberDecl] = P(classConstDecl | methodDecl)
 
