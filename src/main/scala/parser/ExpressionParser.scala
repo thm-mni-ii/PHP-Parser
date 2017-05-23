@@ -95,7 +95,7 @@ object ExpressionParser {
     "++".!.map(_ => (x) => PostfixIncrementExp(x)) |
     "--".!.map(_ => (x) => PostfixDecrementExp(x)))
 
-  val postfixExp : P[Expression] = P(primaryExpWithoutVariable | cloneExp |
+  val postfixExp : P[Expression] = P(primaryExpWithoutVariable | cloneExp | objectCreationExp |
     (variable ~ postfixOperatorFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1))
 
   val cloneExp : P[Expression] = P("clone" ~ expression).map(CloneExp)
