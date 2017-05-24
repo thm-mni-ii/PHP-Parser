@@ -176,7 +176,7 @@ object StatementParser {
 
   val namespaceName : P[Seq[Name]] = P(name.rep(min=0, sep="\\"))
 
-  val namespaceUseDeclStmnt = P("use" ~/
+  val namespaceUseDeclStmnt = P("use" ~/ (
     (namespaceUseType ~ "\\".? ~ namespaceName ~ "\\" ~ "{" ~ (namespaceName ~ ("as" ~ name).?)
       .map(t => NamespaceUseClause(None, Right(t._1), t._2)).rep(min=1, sep=",") ~ "}")
       .map(t => NamespaceUseDecl(Some(t._1),Some(t._2),t._3, None)) |
@@ -185,7 +185,7 @@ object StatementParser {
       .map(t => NamespaceUseDecl(t._1, None, t._2, t._3)) |
     ("\\".? ~ namespaceName ~ "\\" ~ "{" ~ (namespaceUseType.? ~ namespaceName ~ ("as" ~ name).?)
       .map(t => NamespaceUseClause(t._1, Right(t._2), t._3)).rep(min=1, sep=",") ~ "}")
-      .map(t => NamespaceUseDecl(None, Some(t._1), t._2, None))
+      .map(t => NamespaceUseDecl(None, Some(t._1), t._2, None)))
   )
 
   val globalDeclStmnt : P[GlobalDecl] = P("global" ~ variableName.rep(sep=",") ~ ";")
