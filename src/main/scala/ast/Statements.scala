@@ -34,8 +34,8 @@ object Statements {
   sealed abstract class JumpStmnt extends Statement
 
   case class GotoStmnt(name: Name, override val text: Option[Text]) extends JumpStmnt with EndTagElement
-  case class ContinueStmnt(lvl: IntegerLiteral, override val text: Option[Text]) extends JumpStmnt with EndTagElement
-  case class BreakStmnt(lvl: IntegerLiteral, override val text: Option[Text]) extends JumpStmnt with EndTagElement
+  case class ContinueStmnt(lvl: Option[IntegerLiteral], override val text: Option[Text]) extends JumpStmnt with EndTagElement
+  case class BreakStmnt(lvl: Option[IntegerLiteral], override val text: Option[Text]) extends JumpStmnt with EndTagElement
   case class ReturnStmnt(exp: Option[Expression], override val text: Option[Text]) extends JumpStmnt with EndTagElement
   case class ThrowStmnt(exp: Expression, override val text: Option[Text]) extends JumpStmnt with EndTagElement
 

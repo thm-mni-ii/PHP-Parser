@@ -3,9 +3,12 @@ package parser
 import ast.Statements._
 import ast.Expressions.Expression
 import ast.Basic.{Name, QualifiedName, Text}
+
 import parser.ExpressionParser.expression
 import parser.PHPParser._
 import parser.Basic._
+import parser.Lexical.ws
+
 import fastparse.noApi._
 import parser.WsAPI._
 
@@ -80,10 +83,10 @@ object StatementParser {
     .map(t => ForeachStmnt(t._1, t._2._1, t._2._2, t._2._3, t._3._1, t._3._2))
 
   val jumpStmnt : P[JumpStmnt] = P(("goto" ~/ name ~ semicolonFactory).map(t => GotoStmnt(t._1, t._2)) |
-    ("continue" ~/ integerLiteral ~ semicolonFactory).map(t => ContinueStmnt(t._1, t._2)) |
-    ("break" ~/ integerLiteral ~ semicolonFactory).map(t => BreakStmnt(t._1, t._2)) |
-    ("return" ~/ expression.? ~ semicolonFactory).map(t => ReturnStmnt(t._1, t._2)) |
-    ("throw" ~/ expression ~ semicolonFactory).map(t => ThrowStmnt(t._1, t._2)))
+    ("continue" ~~ &(";" | "?>" | ws) ~/ integerLiteral.? ~ semicolonFactory).map(t => ContinueStmnt(t._1, t._2)) |
+    ("break" ~~ &(";" | "?>" | ws) ~/ integerLiteral.? ~ semicolonFactory).map(t => BreakStmnt(t._1, t._2)) |
+    ("return" ~~ &(";" | "?>" | ws) ~/ expression.? ~ semicolonFactory).map(t => ReturnStmnt(t._1, t._2)) |
+    ("throw" ~~ &(ws) ~/ expression ~ semicolonFactory).map(t => ThrowStmnt(t._1, t._2)))
 
   private val catchClause : P[CatchClause] = P("catch" ~/ "(" ~ qualifiedName ~ variableName ~ ")" ~ compoundStmnt)
     .map(t => CatchClause(t._1, t._2, t._3))
