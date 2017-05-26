@@ -88,8 +88,10 @@ object ExpressionParser {
 
   val castExp : P[Expression] = P("(" ~ castType ~ ")" ~ expression).map(t => CastExp(t._1, t._2))
 
-  val castType : P[CastType.Value] = P("array".!.map(_ => CastType.ARRAY) | "int".!.map(_ => CastType.INT))
-  //TODO
+  val castType : P[CastType.Value] = P("array".!.map(_ => CastType.ARRAY) | "binary".!.map(_ => CastType.BINARY) | "boolean".!.map(_ => CastType.BOOLEAN) |
+    "bool".!.map(_ => CastType.BOOL) | "double".!.map(_ => CastType.DOUBLE) | "integer".!.map(_ => CastType.INTEGER) |
+    "int".!.map(_ => CastType.INT) | "float".!.map(_ => CastType.FLOAT) | "object".!.map(_ => CastType.OBJECT) |
+    "real".!.map(_ => CastType.REAL) | "string".!.map(_ => CastType.STRING) | "unset".!.map(_ => CastType.UNSET))
 
   val postfixOperatorFactory : P[Variable => Expression] = P(
     "++".!.map(_ => (x) => PostfixIncrementExp(x)) |
