@@ -101,9 +101,9 @@ object ExpressionParser {
   val cloneExp : P[Expression] = P("clone" ~ expression).map(CloneExp)
 
   val objectCreationExp : P[Expression] = P("new" ~~ ws ~
-    (("class" ~~ &("(" | "{" | ws) ~ ("(" ~ argumentExp.rep ~ ")").? ~ classDeclBody)
+    (("class" ~~ &("(" | "{" | ws) ~ ("(" ~ argumentExpressionList ~ ")").? ~ classDeclBody)
       .map(t => AnonymousClassCreationExp(ClassDecl(None, None, t._2._1, t._2._2, t._2._3), t._1)) |
-    ((qualifiedName.map(Left(_)) | expression.map(Right(_))) ~ ("(" ~ argumentExp.rep ~ ")").?)
+    ((qualifiedName.map(Left(_)) | expression.map(Right(_))) ~ ("(" ~ argumentExpressionList ~ ")").?)
       .map(t => InstanceCreationExp(t._1, t._2)))
   )
 
