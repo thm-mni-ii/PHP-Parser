@@ -58,7 +58,7 @@ object StatementParser {
   val iterationStmnt : P[IterationStmnt] = P(whileStmnt | doStmnt | foreachStmnt | forStmnt)
 
   private val whileBody : P[(Seq[Statement], Option[Text])] =
-    P((":" ~ statement.rep ~ "endwhile" ~ semicolonFactory) |
+    P((":" ~/ statement.rep ~ "endwhile" ~ semicolonFactory) |
       statement.map(t => (Seq(t), None)))
 
   val whileStmnt : P[WhileStmnt] =
@@ -68,14 +68,14 @@ object StatementParser {
     P("do" ~/ statement ~ "while" ~/ "(" ~ expression ~ ")" ~ semicolonFactory).map(t => DoStmnt(t._2, t._1, t._3))
 
   private val forBody : P[(Seq[Statement], Option[Text])] =
-    P(":" ~ statement.rep ~ "endfor" ~ semicolonFactory | statement.map(t => (Seq(t), None)))
+    P(":" ~/ statement.rep ~ "endfor" ~ semicolonFactory | statement.map(t => (Seq(t), None)))
 
   val forExpressionList : P[ForExpressionList] = P(expression.rep(sep=",") ~ semicolonFactory).map(t => ForExpressionList(t._1, t._2))
 
   val forStmnt : P[ForStmnt] = P("for" ~/ "(" ~ forExpressionList ~ forExpressionList ~ expression.rep(sep=",") ~ ")" ~ forBody).map(t => ForStmnt(t._1, t._2, ForExpressionList(t._3, None), t._4._1, t._4._2))
 
   private val foreachBody : P[(Seq[Statement], Option[Text])] =
-    P(":" ~ statement.rep ~ "endforeach" ~ semicolonFactory | statement.map(t => (Seq(t), None)))
+    P(":" ~/ statement.rep ~ "endforeach" ~ semicolonFactory | statement.map(t => (Seq(t), None)))
 
   val foreachStmnt : P[ForeachStmnt] = P("foreach" ~/ "(" ~ expression ~ "as" ~ (
     ("&" ~ expression).map(t => (None, true, t)) |
