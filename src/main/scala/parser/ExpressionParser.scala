@@ -113,14 +113,26 @@ object ExpressionParser {
   //TODO
   val classConstAccExp : P[Expression] = P(Fail)
   val constAccExp : P[Expression] = P(Fail)
-  val intrinsicOperator : P[Expression] = P(Fail)
-  val intrinsicConstruct : P[Expression] = P(echoIntrinsic | Fail)
+
+  val listIntrinsic : P[Intrinsic] = P(Fail) //TODO
   val echoIntrinsic : P[EchoIntrinsic] = P("echo" ~ expression.rep(min=1, sep=",")).map(EchoIntrinsic)
+  val unsetIntrinsic : P[UnsetIntrinsic] = P("unset" ~ "(" ~ variable.rep(1, sep=",") ~ ")").map(UnsetIntrinsic)
+
+  val emptyIntrinsic : P[EmptyIntrinsic] = P("empty" ~ "(" ~ expression ~ ")").map(EmptyIntrinsic)
+  val evalIntrinsic : P[EvalIntrinsic] = P("eval" ~ "(" ~ expression ~ ")").map(EvalIntrinsic)
+  val exitIntrinsic : P[ExitIntrinsic] = P("exit" ~ ("(" ~ expression.? ~ ")").? |
+    ("die" ~ ("(" ~ expression.? ~ ")").?)).map(t => ExitIntrinsic(t.getOrElse(None)))
+  val issetIntrinsic : P[IssetIntrinsic] = P("isset" ~ "(" ~ variable.rep(1, sep=",") ~ ")").map(IssetIntrinsic)
+  val printIntrinsic : P[PrintIntrinsic] = P("print" ~ expression).map(PrintIntrinsic)
+
+  val intrinsicConstruct : P[Expression] = P(echoIntrinsic | unsetIntrinsic | listIntrinsic)
+  val intrinsicOperator : P[Expression] = P(emptyIntrinsic | evalIntrinsic | exitIntrinsic | issetIntrinsic | printIntrinsic)
   val intrinsic : P[Expression] = P(intrinsicOperator | intrinsicConstruct)
+
   val anonymousFuncExp : P[Expression] = P(Fail)
   val enclosedExp : P[Expression] = P(Fail)
 
-  val variableName : P[SimpleNameVar] = P("$" ~ name).map(SimpleNameVar)
+  val variableName : P[SimpleNameVar] = P("$" ~ nameWithKeyword).map(SimpleNameVar)
 
   val simpleVariable : P[SimpleVar] = P(("$" ~ simpleVariable).map(SimpleAccessVar) |
     ("$" ~ "{" ~ expression ~ "}").map(SimpleExpVar) | variableName)
@@ -128,7 +140,7 @@ object ExpressionParser {
   val scopeAccVar : P[ScopeAccessVar] = P(selfScope | parentScope | staticScope).map(ScopeAccessVar)
   val qualifiedNameVar : P[QualifiedNameVar] = P(qualifiedName).map(QualifiedNameVar)
 
-  val memberName : P[MemberName] = P(name.map(NameMember) | simpleVariable.map(SimpleVarMember) | ("{" ~ expression ~ "}").map(ExpMember))
+  val memberName : P[MemberName] = P(nameWithKeyword.map(NameMember) | simpleVariable.map(SimpleVarMember) | ("{" ~ expression ~ "}").map(ExpMember))
 
   val argumentExpressionList : P[Seq[ArgumentExpression]] = P(argumentExp.rep(sep=","))
 

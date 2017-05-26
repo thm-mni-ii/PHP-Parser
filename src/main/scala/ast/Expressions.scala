@@ -51,6 +51,12 @@ object Expressions {
 
   sealed abstract class Intrinsic extends Expression
   case class EchoIntrinsic(exps: Seq[Expression]) extends Intrinsic
+  case class UnsetIntrinsic(vars: Seq[Variable]) extends Intrinsic
+  case class EmptyIntrinsic(exp: Expression) extends Intrinsic
+  case class EvalIntrinsic(exp: Expression) extends Intrinsic
+  case class ExitIntrinsic(exp: Option[Expression]) extends Intrinsic
+  case class IssetIntrinsic(vars: Seq[Variable]) extends Intrinsic
+  case class PrintIntrinsic(exp: Expression) extends Intrinsic
 
   case class InstanceCreationExp(designator: Either[QualifiedName, Expression], arguments: Option[Seq[ArgumentExpression]]) extends Expression
   case class AnonymousClassCreationExp(decl: ClassDecl, arguments: Option[Seq[ArgumentExpression]]) extends Expression
