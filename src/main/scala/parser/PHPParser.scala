@@ -1,7 +1,9 @@
 package parser
 
+import parser.Basic.script
+
 object PHPParser {
   private[parser] var isTagProcessed = true
 
-  def parse(toParse: String) = Basic.script.parse(toParse)
+  def parse(toParse: String) = script.parse(toParse)
 }

@@ -3,12 +3,11 @@ package parser
 import ast.Basic._
 import ast.Expressions.{ScopeType, SimpleNameVar}
 import ast.Statements._
-
-import parser.StatementParser.statement
-import parser.PHPParser._
-
 import fastparse.noApi._
+import parser.PHPParser._
+import parser.StatementParser.statement
 import parser.WsAPI._
+import parser.literals.Keywords._
 
 object Basic {
 
@@ -29,7 +28,7 @@ object Basic {
     })
   )
 
-  val normalStartTag = P("<?php".!)
+  val normalStartTag = P("<?".! ~~ PHP)
   val echoStartTag = P("<?=".!)
   val endTag = P("?>")
   val startTag = P(normalStartTag | echoStartTag)
@@ -40,43 +39,33 @@ object Basic {
   val nameWithKeyword : P[Name] = P(nonDigit ~~ (nonDigit | digit).repX).map(t => Name(t._1 + t._2.mkString))
   val name : P[Name] = P(!keyword ~~ nameWithKeyword)
 
-  val keyword = P(StringIn(allKeywords:_*) ~~ !nonDigit)
-
-  val allKeywords = Seq(
-    "abstract", "and", "array", "as", "break", "callable", "case", "catch",
-    "class", "clone", "const", "continue", "declare", "default", "die", "do", "echo", "else",
-    "elseif", "empty", "enddeclare", "endfor", "endforeach", "endif", "endswitch", "endwhile",
-    "eval", "exit", "extends", "final", "finally", "for", "foreach", "function", "global", "goto",
-    "if", "implements", "include", "include_once", "instanceof", "insteadof", "interface", "isset",
-    "list", "namespace", "new", "or", "print", "private", "protected", "public", "require",
-    "require_once", "return", "static", "switch", "throw", "trait", "try", "unset", "use",
-    "var", "while", "xor", "yield")
+  val keyword = P(StringInIgnoreCase(allKeywords:_*) ~~ !nonDigit)
 
   val variableName : P[SimpleNameVar] = P("$" ~~ name).map(SimpleNameVar)
 
-  def qualifiedName : P[QualifiedName] = P(("namespace" ~ "\\" ~ (name ~ "\\").rep ~ name).map(t => QualifiedName(NamespaceType.LOCAL, t._1, t._2)) |
+  def qualifiedName : P[QualifiedName] = P((NAMESPACE ~ "\\" ~ (name ~ "\\").rep ~ name).map(t => QualifiedName(NamespaceType.LOCAL, t._1, t._2)) |
     ("\\".!.? ~ (name ~ "\\").rep ~ name).map(t =>
       if(t._1.isDefined) QualifiedName(NamespaceType.GLOBAL, t._2, t._3)
       else QualifiedName(NamespaceType.RELATIVE, t._2, t._3)
     ))
 
-  val arrayType = P("array").map(_ => ArrayType)
-  val callableType = P("callable").map(_ => CallableType)
-  val iterableType = P("iterable").map(_ => IterableType)
-  val boolType = P("bool").map(_ => BoolType)
-  val floatType = P("float").map(_ => FloatType)
-  val intType = P("int").map(_ => IntType)
-  val stringType = P("string").map(_ => StringType)
-  val voidType = P("void").map(_ => VoidType)
+  val arrayType = P(ARRAY).map(_ => ArrayType)
+  val callableType = P(CALLABLE).map(_ => CallableType)
+  val iterableType = P(ITERABLE).map(_ => IterableType)
+  val boolType = P(BOOL).map(_ => BoolType)
+  val floatType = P(FLOAT).map(_ => FloatType)
+  val intType = P(INT).map(_ => IntType)
+  val stringType = P(STRING).map(_ => StringType)
+  val voidType = P(VOID).map(_ => VoidType)
 
   val assignmentOp = P(StringIn("**", "*", "/", "+", "-", ".", "<<", ">>", "&", "^", "|").!)
   val equalityOp = P(StringIn("===", "==", "!==", "!=", "<>").!)
   val relationalOp = P(StringIn("<=>", "<=", ">=", "<", ">").!)
   val unaryOp = P(CharIn("+-!~").!)
 
-  val selfScope = P("self").map(_ => ScopeType.SELF)
-  val parentScope = P("parent").map(_ => ScopeType.PARENT)
-  val staticScope = P("static").map(_ => ScopeType.STATIC)
+  val selfScope = P(SELF).map(_ => ScopeType.SELF)
+  val parentScope = P(PARENT).map(_ => ScopeType.PARENT)
+  val staticScope = P(STATIC).map(_ => ScopeType.STATIC)
 
   val sqEscapeSequence = P("\\".! ~~ AnyChar.!).map(t => t._1 + t._2)
   val sqUnescapedSequence = P(CharsWhile(!"\\'".contains(_)).!)
