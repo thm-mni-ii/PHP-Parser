@@ -36,8 +36,8 @@ object StatementParser {
   val selectionStmnt : P[SelectionStmnt] = P(ifStmnt | switchStmnt)
 
   private val ifBody : P[(Seq[Statement], Seq[(Expression, Seq[Statement])], Option[Seq[Statement]], Option[Text])] =
-    P((":" ~ statement.rep(1) ~ ("elseif" ~ "(" ~ expression ~ ")" ~ ":" ~ statement.rep(1)).rep ~ ("else" ~ ":" ~ statement.rep).? ~ "endif" ~ semicolonFactory) |
-      (statement ~ ("elseif" ~ "(" ~ expression ~ ")" ~ statement).rep ~ ("else" ~ statement).?).map(t => (Seq(t._1), t._2.map(e => (e._1, Seq(e._2))), t._3.map(Seq(_)), None)))
+    P((":" ~/ statement.rep(1) ~ ("elseif" ~/ "(" ~ expression ~ ")" ~/ ":" ~/ statement.rep(1)).rep ~ ("else" ~/ ":" ~/ statement.rep).? ~ "endif" ~/ semicolonFactory) |
+      (statement ~/ ("elseif" ~/ "(" ~ expression ~ ")" ~/ statement).rep ~ ("else" ~/ statement).?).map(t => (Seq(t._1), t._2.map(e => (e._1, Seq(e._2))), t._3.map(Seq(_)), None)))
 
   val ifStmnt : P[IfStmnt] =
     P("if" ~/ "(" ~ expression ~ ")" ~ ifBody).map(t => IfStmnt(t._1, t._2._1, t._2._2, t._2._3, t._2._4))

@@ -36,7 +36,21 @@ object Basic {
 
   val nonDigitSeq = ('a' to 'z') ++ ('A' to 'Z') ++ ('\u0080' to '\u00ff') :+ '_'
   val nonDigit = P(CharIn(nonDigitSeq).!)
-  val name : P[Name] = P(nonDigit ~~ (nonDigit | digit).repX).map(t => Name(t._1 + t._2.mkString))
+
+  val nameWithKeyword : P[Name] = P(nonDigit ~~ (nonDigit | digit).repX).map(t => Name(t._1 + t._2.mkString))
+  val name : P[Name] = P(!keyword ~~ nameWithKeyword)
+
+  val keyword = P(StringIn(allKeywords:_*) ~~ !nonDigit)
+
+  val allKeywords = Seq(
+    "abstract", "and", "array", "as", "break", "callable", "case", "catch",
+    "class", "clone", "const", "continue", "declare", "default", "die", "do", "echo", "else",
+    "elseif", "empty", "enddeclare", "endfor", "endforeach", "endif", "endswitch", "endwhile",
+    "eval", "exit", "extends", "final", "finally", "for", "foreach", "function", "global", "goto",
+    "if", "implements", "include", "include_once", "instanceof", "insteadof", "interface", "isset",
+    "list", "namespace", "new", "or", "print", "private", "protected", "public", "require",
+    "require_once", "return", "static", "switch", "throw", "trait", "try", "unset", "use",
+    "var", "while", "xor", "yield")
 
   val variableName : P[SimpleNameVar] = P("$" ~~ name).map(SimpleNameVar)
 
