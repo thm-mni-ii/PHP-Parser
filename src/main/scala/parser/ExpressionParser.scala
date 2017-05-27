@@ -4,11 +4,12 @@ import ast.Expressions._
 import ast.Statements.ClassDecl
 import Basic._
 import parser.literals.Keywords._
-import parser.Lexical.ws
+import parser.literals.Lexical.ws
 import parser.StatementParser.classDeclBody
 import parser.literals.KeywordConversions._
 import fastparse.noApi._
-import parser.WsAPI._
+import parser.literals.WsAPI._
+import parser.literals.Literals._
 
 
 

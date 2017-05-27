@@ -8,11 +8,12 @@ import parser.ExpressionParser.expression
 import parser.PHPParser._
 import Basic._
 import parser.literals.Keywords._
-import parser.Lexical.ws
+import parser.literals.Lexical.ws
 import parser.literals.KeywordConversions._
 
 import fastparse.noApi._
-import parser.WsAPI._
+import parser.literals.WsAPI._
+import parser.literals.Literals._
 
 object StatementParser {
 

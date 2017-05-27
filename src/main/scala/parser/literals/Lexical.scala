@@ -1,6 +1,4 @@
-package parser
-
-object WsAPI extends fastparse.WhitespaceApi.Wrapper(Lexical.whitespace)
+package parser.literals
 
 object Lexical {
   import fastparse.all._
@@ -20,3 +18,5 @@ object Lexical {
 
   val ws = P(&(NoTrace(wsChars | newline | comment).rep(1)))
 }
+
+object WsAPI extends fastparse.WhitespaceApi.Wrapper(Lexical.whitespace)

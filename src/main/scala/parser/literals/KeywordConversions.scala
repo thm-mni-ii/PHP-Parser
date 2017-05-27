@@ -47,4 +47,8 @@ object KeywordConversions {
   val stringType = P(STRING).map(_ => StringType)
   val voidType = P(VOID).map(_ => VoidType)
 
+  // ScopeTypes
+  val selfScope = P(SELF).map(_ => ScopeType.SELF)
+  val parentScope = P(PARENT).map(_ => ScopeType.PARENT)
+  val staticScope = P(STATIC).map(_ => ScopeType.STATIC)
 }
