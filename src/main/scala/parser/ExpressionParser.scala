@@ -6,6 +6,7 @@ import Basic._
 import parser.literals.Keywords._
 import parser.Lexical.ws
 import parser.StatementParser.classDeclBody
+import parser.literals.KeywordConversions._
 import fastparse.noApi._
 import parser.WsAPI._
 
@@ -89,10 +90,9 @@ object ExpressionParser {
 
   val castExp : P[Expression] = P("(" ~ castType ~ ")" ~ expression).map(t => CastExp(t._1, t._2))
 
-  val castType : P[CastType.Value] = P(ARRAY.!.map(_ => CastType.ARRAY) | BINARY.!.map(_ => CastType.BINARY) | BOOLEAN.!.map(_ => CastType.BOOLEAN) |
-    BOOL.!.map(_ => CastType.BOOL) | DOUBLE.!.map(_ => CastType.DOUBLE) | INTEGER.!.map(_ => CastType.INTEGER) |
-    INT.!.map(_ => CastType.INT) | FLOAT.!.map(_ => CastType.FLOAT) | OBJECT.!.map(_ => CastType.OBJECT) |
-    REAL.!.map(_ => CastType.REAL) | STRING.!.map(_ => CastType.STRING) | UNSET.!.map(_ => CastType.UNSET))
+  val castType : P[CastType.Value] = P(arrayCastType | binaryCastType | booleanCastType | boolCastType |
+    doubleCastType | integerCastType | intCastType | floatCastType | objectCastType |
+    realCastType | stringCastType | unsetCastType)
 
   val postfixOperatorFactory : P[Variable => Expression] = P(
     "++".!.map(_ => (x) => PostfixIncrementExp(x)) |

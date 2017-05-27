@@ -9,6 +9,7 @@ import parser.PHPParser._
 import Basic._
 import parser.literals.Keywords._
 import parser.Lexical.ws
+import parser.literals.KeywordConversions._
 
 import fastparse.noApi._
 import parser.WsAPI._
@@ -113,6 +114,7 @@ object StatementParser {
     .map(ConstDecl)
 
   val typeDecl : P[TypeDecl] = P(arrayType | callableType |iterableType | boolType | floatType | intType | stringType | qualifiedName.map(QualifiedType))
+
   val possibleType : P[PossibleTypes] = P(voidType | typeDecl)
 
   private val paramType : P[(Option[TypeDecl], Boolean)] = P(typeDecl.? ~ "&".!.?)
@@ -175,8 +177,7 @@ object StatementParser {
   val namespaceDefStmnt : P[NamespaceDef] = P((NAMESPACE ~ name ~ ";").map(t => NamespaceDef(Some(t), None)) |
     (NAMESPACE ~ name.? ~ compoundStmnt).map(t => NamespaceDef(t._1, Some(t._2))))
 
-  val namespaceUseType : P[NamespaceUseType.Value] = P(FUNCTION.!.map(_ => NamespaceUseType.FUNCTION) |
-    CONST.!.map(_ => NamespaceUseType.CONST))
+  val namespaceUseType : P[NamespaceUseType.Value] = P(functionUseType | constUseType)
 
   val namespaceName : P[Seq[Name]] = P(name.rep(min=0, sep="\\"))
 
@@ -201,17 +202,13 @@ object StatementParser {
   val functionStaticDeclStmnt : P[FuncStaticDecl] = P(STATIC ~ staticVarElement.rep(sep=",") ~ ";")
     .map(FuncStaticDecl)
 
-  val classMod : P[ClassModifier] = P(ABSTRACT.!.map(_ => AbstractMod) |
-    "final".!.map(_ => FinalMod))
+  val classMod : P[ClassModifier] = P(abstractMod | finalMod)
 
-  val visibilityMod : P[VisibilityModifier] = P(PUBLIC.!.map(_ => PublicMod) |
-    PRIVATE.!.map(_ => PrivateMod) | PROTECTED.!.map(_ => ProtectedMod))
+  val visibilityMod : P[VisibilityModifier] = P(publicMod | privateMod | protectedMod)
 
-  val propertyMod : P[PropertyModifier] = P(VAR.!.map(_ => NoMod) |
+  val propertyMod : P[PropertyModifier] = P(noMod |
     (visibilityMod ~ staticMod.?).map(t => CombinedMod(t._2, Some(t._1))) |
     (staticMod ~ visibilityMod.?).map(t => CombinedMod(Some(t._1), t._2)))
-
-  val staticMod : P[StaticModifier] = P(STATIC.!).map(_ => StaticMod)
 
   val methodMod : P[MethodModifier] = P(visibilityMod | staticMod | classMod)
 

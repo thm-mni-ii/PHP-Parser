@@ -49,15 +49,6 @@ object Basic {
       else QualifiedName(NamespaceType.RELATIVE, t._2, t._3)
     ))
 
-  val arrayType = P(ARRAY).map(_ => ArrayType)
-  val callableType = P(CALLABLE).map(_ => CallableType)
-  val iterableType = P(ITERABLE).map(_ => IterableType)
-  val boolType = P(BOOL).map(_ => BoolType)
-  val floatType = P(FLOAT).map(_ => FloatType)
-  val intType = P(INT).map(_ => IntType)
-  val stringType = P(STRING).map(_ => StringType)
-  val voidType = P(VOID).map(_ => VoidType)
-
   val assignmentOp = P(StringIn("**", "*", "/", "+", "-", ".", "<<", ">>", "&", "^", "|").!)
   val equalityOp = P(StringIn("===", "==", "!==", "!=", "<>").!)
   val relationalOp = P(StringIn("<=>", "<=", ">=", "<", ">").!)
