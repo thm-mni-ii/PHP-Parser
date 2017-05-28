@@ -37,6 +37,11 @@ object KeywordConversions {
   val stringCastType = P(STRING).map(_ => CastType.STRING)
   val unsetCastType = P(UNSET).map(_ => CastType.UNSET)
 
+  // DeclareDeclarative
+  val ticksDeclarative = P(TICKS).map(_ => DeclareDeclarative.TICKS )
+  val encodingDeclarative = P(ENCODING).map(_ => DeclareDeclarative.ENCODING)
+  val strictTypesDeclarative = P(STRICT_TYPES).map(_ => DeclareDeclarative.STRICT_TYPES)
+
   // TypeDecl
   val arrayType = P(ARRAY).map(_ => ArrayType)
   val callableType = P(CALLABLE).map(_ => CallableType)
@@ -51,4 +56,5 @@ object KeywordConversions {
   val selfScope = P(SELF).map(_ => ScopeType.SELF)
   val parentScope = P(PARENT).map(_ => ScopeType.PARENT)
   val staticScope = P(STATIC).map(_ => ScopeType.STATIC)
+
 }

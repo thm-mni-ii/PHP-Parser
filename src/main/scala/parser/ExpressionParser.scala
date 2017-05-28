@@ -12,8 +12,6 @@ import parser.literals.Literals._
 import parser.statements.DeclarationParser.classDeclBody
 
 
-
-
 object ExpressionParser {
   val expression : P[Expression] = P(yieldExp | requireOnceExp | requireExp | includeOnceExp | includeExp | logicalOrExpr2)
 

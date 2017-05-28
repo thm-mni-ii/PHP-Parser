@@ -1,6 +1,6 @@
 package ast
 
-import ast.Expressions.{Expression, SimpleNameVar}
+import ast.Expressions.{Expression, SimpleNameVar, SimpleVar}
 import ast.Basic._
 
 object Statements {
@@ -49,17 +49,17 @@ object Statements {
 
   sealed abstract class Declaration extends Statement
 
-  case class ConstDecl(elems: Seq[ConstElement]) extends Declaration
+  case class ConstDecl(elems: Seq[ConstElement], override val text: Option[Text]) extends Declaration with EndTagElement
   case class ConstElement(name: Name, exp: Expression)
   case class ClassDecl(mod: Option[ClassModifier], name: Option[Name], extend: Option[QualifiedName], impl: Option[Seq[QualifiedName]], body: Seq[MemberDecl]) extends Declaration
 
   trait MemberDecl
 
-  case class ClassConstDecl(mod: Option[VisibilityModifier], elems: Seq[ConstElement]) extends MemberDecl
-  case class PropertyDecl(mod: PropertyModifier, elems: Seq[PropertyElement]) extends MemberDecl
+  case class ClassConstDecl(mod: Option[VisibilityModifier], elems: Seq[ConstElement], override val text: Option[Text]) extends MemberDecl with EndTagElement
+  case class PropertyDecl(mod: PropertyModifier, elems: Seq[PropertyElement], override val text: Option[Text]) extends MemberDecl with EndTagElement
   case class PropertyElement(name: SimpleNameVar, initValue: Option[Expression])
-  case class MethodDecl(mods: Seq[MethodModifier], header: FuncHeader, body: Option[CompoundStmnt]) extends MemberDecl
-  case class TraitUseClause(traits: Seq[QualifiedName], useSpec: Seq[TraitUseSpec]) extends MemberDecl
+  case class MethodDecl(mods: Seq[MethodModifier], header: FuncHeader, body: Option[CompoundStmnt], override val text: Option[Text]) extends MemberDecl with EndTagElement
+  case class TraitUseClause(traits: Seq[QualifiedName], useSpec: Seq[TraitUseSpec], override val text: Option[Text]) extends MemberDecl with EndTagElement
 
   sealed abstract class TraitUseSpec
 
@@ -93,9 +93,9 @@ object Statements {
     val FUNCTION, CONST = Value
   }
 
-  case class GlobalDecl(vars: Seq[SimpleNameVar]) extends Declaration
+  case class GlobalDecl(vars: Seq[SimpleVar], override val text: Option[Text]) extends Declaration with EndTagElement
 
-  case class FuncStaticDecl(vars: Seq[StaticVarElement]) extends Declaration
+  case class FuncStaticDecl(vars: Seq[StaticVarElement], override val text: Option[Text]) extends Declaration with EndTagElement
   case class StaticVarElement(name: SimpleNameVar, initValue: Option[Expression])
 
   sealed abstract class Definition extends Statement
@@ -118,5 +118,5 @@ object Statements {
   case object StringType extends ScalarTypeDecl
   case class QualifiedType(name: QualifiedName) extends TypeDecl()
 
-  case class NamespaceDef(name: Option[Name], stmnt: Option[CompoundStmnt]) extends Definition
+  case class NamespaceDef(name: Option[Name], stmnt: Option[CompoundStmnt], override val text: Option[Text]) extends Definition with EndTagElement
 }
