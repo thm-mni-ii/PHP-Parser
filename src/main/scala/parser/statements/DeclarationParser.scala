@@ -1,23 +1,27 @@
 package parser.statements
 
-import ast.Basic.{QualifiedName, Text}
-import ast.Statements._
 import fastparse.noApi._
 import parser.literals.WsAPI._
-import parser.Basic.qualifiedName
-import parser.ExpressionParser.{expression, simpleVariable}
+import parser.literals.Lexical.ws
+
+import ast.Basic.{QualifiedName, Text}
+import ast.Statements._
+
 import parser.literals.KeywordConversions._
 import parser.literals.Keywords._
+import parser.literals.Literals.{name, variableName}
+
+import parser.Basic.{qualifiedName, semicolonFactory, namespaceName}
+import parser.ExpressionParser.{expression, simpleVariable}
 import parser.statements.StatementParser.{compoundStmnt, funcHeader}
-import parser.literals.Literals._
-import parser.literals.Lexical.ws
-import parser.Basic._
 
 
 /**
-  * Created by tobias on 27.05.17.
+  * This object contains all declaration statements
   */
 object DeclarationParser {
+
+  // declaration statements
 
   private val constElem: P[ConstElement] = P(name ~ "=" ~ expression)
     .map(t => ConstElement(t._1, t._2))

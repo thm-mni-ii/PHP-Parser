@@ -1,19 +1,26 @@
 package parser.statements
 
+import fastparse.noApi._
+import parser.literals.WsAPI._
+import parser.literals.Lexical.ws
+
 import ast.Basic.Text
 import ast.Statements._
-import fastparse.noApi._
-import parser.Basic.{echoStartTag, qualifiedName, semicolonFactory}
-import parser.ExpressionParser.expression
-import parser.PHPParser._
+
 import parser.literals.KeywordConversions._
 import parser.literals.Keywords._
-import parser.literals.Lexical.ws
 import parser.literals.Literals._
-import parser.literals.WsAPI._
+
+import parser.PHPParser.isTagProcessed
+import parser.Basic.{echoStartTag, qualifiedName, semicolonFactory}
+import parser.ExpressionParser.expression
+
 import parser.statements.ControlFlowParser._
 import parser.statements.DeclarationParser._
 
+/**
+  * This object contains all basic statements
+ */
 object StatementParser {
 
   def statement : P[Statement] = if(isTagProcessed) possibleStatements else echoTagStmnt

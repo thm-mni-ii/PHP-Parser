@@ -1,20 +1,22 @@
 package parser.statements
 
+import fastparse.noApi._
+import parser.literals.WsAPI._
+import parser.literals.Lexical.ws
+
 import ast.Basic.Text
 import ast.Expressions.Expression
 import ast.Statements._
-import fastparse.noApi._
-import parser.literals.WsAPI._
-import parser.ExpressionParser.expression
+
 import parser.literals.Keywords._
-import parser.literals.Lexical.ws
-import parser.literals.Literals.integerLiteral
-import parser.literals.Literals.name
+
+import parser.Basic.semicolonFactory
+import parser.literals.Literals.{integerLiteral, name}
+import parser.ExpressionParser.expression
 import parser.statements.StatementParser.{emptyStmnt, statement, statements}
-import parser.Basic._
 
 /**
-  * Created by tobias on 27.05.17.
+  * This object contains all statements, which manipulate the sequential control flow.
   */
 object ControlFlowParser {
 
