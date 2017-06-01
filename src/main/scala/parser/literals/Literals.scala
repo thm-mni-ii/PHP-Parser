@@ -18,7 +18,7 @@ object Literals {
 
   val keyword = P(StringInIgnoreCase(allKeywords:_*) ~ !nonDigit)
 
-  val variableName : P[SimpleNameVar] = P("$" ~ name).map(SimpleNameVar)
+  val variableName : P[SimpleNameVar] = P("$" ~ nameWithKeyword).map(SimpleNameVar)
 
   val stringLiteral : P[StringLiteral] = P(sqStringLiteral | dqStringLiteral)
 
