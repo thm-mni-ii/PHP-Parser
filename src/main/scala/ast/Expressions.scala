@@ -19,6 +19,7 @@ object Expressions {
   case class AssignmentExp(e: Boolean) extends Expression
   case class TernaryExp(cond: Expression, first: Option[Expression], second: Expression) extends Expression
   case class SimpleAssignmentExp(byRef: Boolean, variable: Variable, exp: Expression) extends Expression
+  case class ListAssignmentExp(list: ListIntrinsic, exp: Expression) extends Expression
   case class CoalesceExp(exp1: Expression, exp2: Expression) extends Expression
   case class CompoundAssignmentExp(op: String, variable: Variable, exp: Expression) extends Expression
   case class LogicalOrExp(exp1: Expression, exp2: Expression) extends Expression
@@ -42,7 +43,7 @@ object Expressions {
   case class PrefixDecrementExp(va: Variable) extends Expression
   case class UnaryOpExp(op: String, exp: Expression) extends Expression
   case class ErrorControlExp(exp: Expression) extends Expression
-  case class ShellCommandExp(content: String) extends Expression
+  case class ShellCommandExp(sequence: Seq[DQElement]) extends Expression
   case class CastExp(cast: CastType.Value, exp: Expression) extends Expression
 
   case object CastType extends Enumeration {
@@ -57,6 +58,7 @@ object Expressions {
   case class ExitIntrinsic(exp: Option[Expression]) extends Intrinsic
   case class IssetIntrinsic(vars: Seq[Variable]) extends Intrinsic
   case class PrintIntrinsic(exp: Expression) extends Intrinsic
+  case class ListIntrinsic(expList: Either[Seq[Expression], Seq[(Expression, Expression)]]) extends Intrinsic
 
   case class InstanceCreationExp(designator: Either[QualifiedName, Expression], arguments: Option[Seq[ArgumentExpression]]) extends Expression
   case class AnonymousClassCreationExp(decl: ClassDecl, arguments: Option[Seq[ArgumentExpression]]) extends Expression
@@ -106,6 +108,8 @@ object Expressions {
   case class ArrayCreationVar(elems: Seq[ArrayElement]) extends Variable
   case class ArrayElement(key: Option[Expression], value: Expression, designateVar: Boolean)
   case class ArgumentExpression(isVariadic: Boolean, exp: Expression)
+
+  case class ClassConstAcc(from: Variable, name: Name) extends Accessor(from)
 
   //unused
   case class SpecialExp() extends Expression

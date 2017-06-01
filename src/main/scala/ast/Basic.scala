@@ -1,6 +1,6 @@
 package ast
 
-import ast.Expressions.Expression
+import ast.Expressions.{Expression, SimpleNameVar, Variable}
 import ast.Statements.Statement
 
 object Basic {
@@ -23,8 +23,22 @@ object Basic {
   sealed abstract class Literal extends Expression
 
   sealed abstract class StringLiteral extends Literal
-  case class DQStringLiteral(prefix: Option[String], sequence: String) extends StringLiteral
   case class SQStringLiteral(prefix: Option[String], sequence: String) extends StringLiteral
+
+  case class DQStringLiteral(prefix: Option[String], sequence: Seq[DQElement]) extends StringLiteral
+  sealed abstract class DQElement
+  case class DQStringElement(s: String) extends DQElement
+  case class WrappedUnicodeDQElement(value: Either[Seq[Char], Variable]) extends DQElement
+  case class OctalDQElement(digits: Seq[Char]) extends DQElement
+  case class HexDQElement(digits: Seq[Char]) extends DQElement
+  case class ExpressionDQElement(exp: Expression) extends DQElement
+  case class VarDQElement(variable: SimpleNameVar, access: Option[DQVarAccess]) extends DQElement
+  sealed abstract class DQVarAccess
+  case class PropertyDQVarAcc(name: Name) extends DQVarAccess
+  case class NameOffsetDQVarAcc(name: Name) extends DQVarAccess
+  case class VarOffsetDQVarAcc(variable: SimpleNameVar) extends DQVarAccess
+  case class IntOffsetDQVarAcc(integerLiteral: IntegerLiteral) extends DQVarAccess
+
 
   sealed abstract class IntegerLiteral extends Literal
   case class DecimalLiteral(value: String) extends IntegerLiteral

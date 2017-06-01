@@ -4,6 +4,8 @@ import ast.Basic._
 import ast.Expressions.SimpleNameVar
 import fastparse.all._
 import parser.literals.Keywords.allKeywords
+import parser.literals.Lexical.whitespace
+import parser.ExpressionParser.{expression, variable}
 
 /**
   * Created by tobias on 27.05.17.
@@ -49,11 +51,26 @@ object Literals {
   val sqCharSequence = P((sqEscapeSequence | sqUnescapedSequence).rep).map(_.mkString)
   val sqStringLiteral = P(CharIn("bB").!.? ~ "'" ~ sqCharSequence ~ "'").map(t => SQStringLiteral(t._1, t._2))
 
-  val dqEscapeSequence = P("\\".! ~ AnyChar.!).map(t => t._1 + t._2)
-  val dqUnescapedSequence = P(CharsWhile(!"\\\"".contains(_)).!)
-  val dqCharSequence = P((dqEscapeSequence | dqUnescapedSequence).rep).map(_.mkString)
+  val dqNormalEscapeSequence = P("\\".! ~ !(CharIn("xX01234567") | "u{") ~ AnyChar.!).map(t => t._1 + t._2)
+  val dqUnescapedSequence = P(CharsWhile(!"\\\"$".contains(_)).!)
+
+  val dQStringElement = P((dqNormalEscapeSequence | dqUnescapedSequence).rep(1)).map(t => DQStringElement(t.mkString))
+  val dqOctalEscapeElement = P("\\" ~ octalDigit.rep(min = 1, max = 3)).map(t => OctalDQElement(t.map(_(0))))
+  val dqHexEscapeElement = P("\\" ~ IgnoreCase("x") ~ hexadecimalDigit.rep(min = 1, max = 2)).map(t => HexDQElement(t.map(_(0))))
+  val dqUnicodeEscapeElement = P("\\u{" ~ (
+    hexadecimalDigit.rep(min = 1).map(t => Left(t.map(_(0)))) |
+    variable.map(Right(_)) ~ whitespace
+  ) ~ "}").map(WrappedUnicodeDQElement)
+  val dqVarEscapeElement = P(variableName ~ ((
+    "->" ~ name).map(PropertyDQVarAcc) | ("[" ~ (
+    name.map(NameOffsetDQVarAcc) |
+    variableName.map(VarOffsetDQVarAcc) |
+    integerLiteral.map(IntOffsetDQVarAcc)
+  ) ~ "]")).?).map(t => VarDQElement(t._1, t._2))
+  val dqExpressionElement = P("${" ~ expression ~ "}").map(ExpressionDQElement)
+
+  val dqCharSequence = P((dQStringElement | dqOctalEscapeElement | dqHexEscapeElement | dqUnicodeEscapeElement | dqVarEscapeElement | dqExpressionElement).rep)
   val dqStringLiteral = P(CharIn("bB").!.? ~ "\"" ~ dqCharSequence ~ "\"").map(t => DQStringLiteral(t._1, t._2))
-  //TODO dq's are wrong
 
   val literal : P[Literal] = P(integerLiteral | floatingLiteral | stringLiteral)
 }
