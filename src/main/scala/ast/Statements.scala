@@ -101,7 +101,7 @@ object Statements {
   sealed abstract class Definition extends Statement
 
   case class FuncDef(header: FuncHeader, body: CompoundStmnt) extends Definition
-  case class FuncHeader(returnRef: Boolean, name: Name, params: Seq[ParameterDecl], ret: Option[PossibleTypes])
+  case class FuncHeader(returnRef: Boolean, name: Option[Name], params: Seq[ParameterDecl], ret: Option[PossibleTypes])
   sealed abstract class ParameterDecl
   case class SimpleParam(t: Option[TypeDecl], desVar: Boolean, name: SimpleNameVar, defValue: Option[Expression]) extends ParameterDecl
   case class VariadicParam(t: Option[TypeDecl], desVar: Boolean, name: SimpleNameVar) extends ParameterDecl

@@ -9,8 +9,10 @@ import ast.Expressions._
 import parser.literals.Keywords._
 import parser.literals.Literals._
 
+import parser.statements.StatementParser.{compoundStmnt, anonymousFuncHeader}
 import parser.expressions.OperatorParser.logicalOrExpr2
 import parser.expressions.VariableParser.{arrayElement, variable}
+
 
 object ExpressionParser {
 
@@ -52,8 +54,9 @@ object ExpressionParser {
   val intrinsicConstruct : P[Expression] = P(echoIntrinsic | unsetIntrinsic | listIntrinsic)
   val intrinsicOperator : P[Expression] = P(emptyIntrinsic | evalIntrinsic | exitIntrinsic | issetIntrinsic | printIntrinsic)
   val intrinsic : P[Expression] = P(intrinsicOperator | intrinsicConstruct)
-
-  val anonymousFuncExp : P[Expression] = P(Fail)
+  
+  val anonymousFuncExp : P[Expression] = P(STATIC.!.?.map(_.isDefined) ~ anonymousFuncHeader ~ compoundStmnt)
+    .map(t => AnonymousFunctionCreationExp(t._1, t._2._1, t._2._2, t._3))
 
   val singleExpression : P[Expression] = P(yieldExp | requireOnceExp | requireExp | includeOnceExp | includeExp)
 

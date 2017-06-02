@@ -1,7 +1,7 @@
 package ast
 
 import ast.Basic._
-import ast.Statements.ClassDecl
+import ast.Statements.{ClassDecl, CompoundStmnt, FuncHeader}
 
 object Expressions {
 
@@ -43,6 +43,7 @@ object Expressions {
   case class PrefixDecrementExp(va: Variable) extends Expression
   case class UnaryOpExp(op: String, exp: Expression) extends Expression
   case class ErrorControlExp(exp: Expression) extends Expression
+  case class AnonymousFunctionCreationExp(isStatic: Boolean, header: FuncHeader, useClause: Seq[(Boolean, SimpleNameVar)], body: CompoundStmnt) extends Expression
   case class ShellCommandExp(sequence: Seq[StringElement]) extends Expression
   case class CastExp(cast: CastType.Value, exp: Expression) extends Expression
 

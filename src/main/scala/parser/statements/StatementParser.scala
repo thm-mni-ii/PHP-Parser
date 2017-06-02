@@ -5,6 +5,7 @@ import parser.literals.WsAPI._
 import parser.literals.Lexical.ws
 
 import ast.Basic.Text
+import ast.Expressions.SimpleNameVar
 import ast.Statements._
 
 import parser.literals.KeywordConversions._
@@ -14,7 +15,6 @@ import parser.literals.Literals._
 import parser.PHPParser.isTagProcessed
 import parser.Basic.{echoStartTag, qualifiedName, semicolonFactory}
 import parser.expressions.ExpressionParser.expression
-
 import parser.statements.ControlFlowParser._
 import parser.statements.DeclarationParser._
 
@@ -71,8 +71,15 @@ object StatementParser {
     (variableName ~ ("=" ~ expression).?).map(t => (a: Option[TypeDecl], b: Boolean) => SimpleParam(a, b, t._1, t._2)))
 
   private[statements] val funcHeader : P[FuncHeader] =
-    P(FUNCTION ~~ &(ws) ~/ "&".!.? ~ name ~ "(" ~/ (paramType ~ parameterDecl).rep(sep=",".~/) ~ ")" ~/ (":" ~/ possibleFunctionType).?)
-      .map(t => FuncHeader(t._1.isDefined, t._2, t._3.map(g => g._3(g._1, g._2)), t._4))
+    P(FUNCTION ~~ &(ws) ~ "&".!.? ~ name ~/ "(" ~/ (paramType ~ parameterDecl).rep(sep=",".~/) ~ ")" ~/ (":" ~/ possibleFunctionType).?)
+      .map(t => FuncHeader(t._1.isDefined, Some(t._2), t._3.map(g => g._3(g._1, g._2)), t._4))
+
+  val anonymousFuncHeader : P[(FuncHeader, Seq[(Boolean, SimpleNameVar)])] = P(
+    FUNCTION ~~ &(ws) ~ "&".!.? ~
+      "(" ~/ (paramType ~ parameterDecl).rep(sep=",".~/) ~ ")" ~/
+      (USE ~ "(" ~ ("&".!.?.map(_.isDefined) ~ variableName).rep(1, sep = ",") ~ ")").? ~
+      (":" ~/ possibleFunctionType).?)
+    .map(t => (FuncHeader(t._1.isDefined, None, t._2.map(g => g._3(g._1, g._2)), t._4), t._3.getOrElse(Seq())))
 
   val functionDefStmnt : P[FuncDef] = P(funcHeader ~ &("{") ~/ compoundStmnt)
     .map(t => FuncDef(t._1, t._2))
