@@ -75,7 +75,7 @@ object StatementParser {
       .map(t => FuncHeader(t._1.isDefined, Some(t._2), t._3.map(g => g._3(g._1, g._2)), t._4))
 
   val anonymousFuncHeader : P[(FuncHeader, Seq[(Boolean, SimpleNameVar)])] = P(
-    FUNCTION ~~ &(ws) ~ "&".!.? ~
+    FUNCTION ~~ &(ws | "(") ~ "&".!.? ~
       "(" ~/ (paramType ~ parameterDecl).rep(sep=",".~/) ~ ")" ~/
       (USE ~ "(" ~ ("&".!.?.map(_.isDefined) ~ variableName).rep(1, sep = ",") ~ ")").? ~
       (":" ~/ possibleFunctionType).?)
