@@ -72,6 +72,7 @@ object Keywords {
   val INTERFACE = P(I("interface"))
   val ISSET = P(I("isset"))
   val ITERABLE = P(I("iterable"))
+  val LIST = P(I("list"))
   val NAMESPACE = P(I("namespace"))
   val NEW = P(I("new"))
   val OBJECT = P(I("object"))

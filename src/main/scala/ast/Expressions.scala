@@ -43,7 +43,7 @@ object Expressions {
   case class PrefixDecrementExp(va: Variable) extends Expression
   case class UnaryOpExp(op: String, exp: Expression) extends Expression
   case class ErrorControlExp(exp: Expression) extends Expression
-  case class ShellCommandExp(sequence: Seq[DQElement]) extends Expression
+  case class ShellCommandExp(sequence: Seq[StringElement]) extends Expression
   case class CastExp(cast: CastType.Value, exp: Expression) extends Expression
 
   case object CastType extends Enumeration {

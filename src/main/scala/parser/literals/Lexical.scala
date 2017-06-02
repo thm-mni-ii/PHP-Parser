@@ -6,8 +6,8 @@ object Lexical {
   val wsChars = P(CharIn("\u0020\u0009"))
   val newline = P(StringIn("\r\n", "\n", "\r"))
 
-  val lineCommentText = P(CharsWhile(c => c != '\n' && c != '\r' && c != '?') | !"?>" ~ AnyChar)
-  val lineComment = P(("//" | "#") ~ lineCommentText)
+  val lineCommentText = P(CharsWhile(c => c != '\n' && c != '\r' && c != '?') | !("?>" | newline) ~ AnyChar)
+  val lineComment = P(("//" | "#") ~ lineCommentText.rep)
 
   val multilineText = P(CharsWhile(c => c != '*') | (!"*/" ~ AnyChar))
   val multiLineComment = P("/*" ~ multilineText.rep ~ ("*/" | End))

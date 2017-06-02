@@ -12,7 +12,8 @@ import parser.literals.Keywords._
 import parser.literals.Literals.{name, variableName}
 
 import parser.Basic.{qualifiedName, semicolonFactory, namespaceName}
-import parser.ExpressionParser.{expression, simpleVariable}
+import parser.ExpressionParser.{expression}
+import parser.expressions.VariableParser.simpleVariable
 import parser.statements.StatementParser.{compoundStmnt, funcHeader}
 
 
@@ -85,8 +86,8 @@ object DeclarationParser {
   private val bodyOrEnd: P[(Option[CompoundStmnt], Option[Text])] =
     P(semicolonFactory.map((None, _)) | compoundStmnt.map(t => (Some(t), None)))
 
-  val methodDecl: P[MethodDecl] = P((methodMod.rep(1, sep = ws) ~~ &(ws)).? ~ funcHeader ~ bodyOrEnd)
-    .map(t => MethodDecl(t._1.getOrElse(Seq()), t._2, t._3._1, t._3._2))
+  val methodDecl: P[MethodDecl] = P((methodMod ~~ &(ws)).rep ~ funcHeader ~ bodyOrEnd)
+    .map(t => MethodDecl(t._1, t._2, t._3._1, t._3._2))
 
 
   private val traitUseSpec: P[TraitUseSpec] =
@@ -106,7 +107,7 @@ object DeclarationParser {
   private val classMemberDecl: P[MemberDecl] = P(classConstDecl | propertyDecl | methodDecl | traitUseClause)
 
   private[parser] val classDeclBody: P[(Option[QualifiedName], Option[Seq[QualifiedName]], Seq[MemberDecl])] = P(
-    (&(ws) ~ EXTENDS ~~ &(ws) ~ qualifiedName).? ~
+    (&(ws) ~ EXTENDS ~~ &(ws) ~ qualifiedName).? ~~
     (&(ws) ~ IMPLEMENTS ~~ &(ws) ~ qualifiedName.rep(sep = ",".~/)).? ~
       "{" ~/ classMemberDecl.rep ~ "}")
 
@@ -119,7 +120,7 @@ object DeclarationParser {
   private val interfaceMemberDecl: P[MemberDecl] = P(classConstDecl | methodDecl)
 
   val interfaceDeclStmnt: P[InterfaceDecl] =
-    P(INTERFACE ~~ &(ws) ~/ name ~~ (&(ws) ~ EXTENDS ~~ &(ws) ~ qualifiedName.rep(sep = ",".~/)).? ~ "(" ~/ interfaceMemberDecl.rep ~ ")")
+    P(INTERFACE ~~ &(ws) ~/ name ~~ (&(ws) ~ EXTENDS ~~ &(ws) ~ qualifiedName.rep(sep = ",".~/)).? ~ "{" ~/ interfaceMemberDecl.rep ~ "}")
       .map(t => InterfaceDecl(t._1, t._2, t._3))
 
 
