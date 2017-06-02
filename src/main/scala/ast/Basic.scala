@@ -23,21 +23,28 @@ object Basic {
   sealed abstract class Literal extends Expression
 
   sealed abstract class StringLiteral extends Literal
+
+  sealed abstract class StringElement
+  case class UnicodeStringElement(value: Either[Seq[Char], Variable]) extends StringElement
+  case class OctalStringElement(digits: Seq[Char]) extends StringElement
+  case class HexStringElement(digits: Seq[Char]) extends StringElement
+  case class ExpressionStringElement(exp: Expression) extends StringElement
+  case class VarStringElement(variable: SimpleNameVar, access: Option[StringVarAccess]) extends StringElement
+
+  sealed abstract class StringVarAccess
+  case class PropertyStringVarAcc(name: Name) extends StringVarAccess
+  case class NameOffsetStringVarAcc(name: Name) extends StringVarAccess
+  case class VarOffsetStringVarAcc(variable: SimpleNameVar) extends StringVarAccess
+  case class IntOffsetStringVarAcc(integerLiteral: IntegerLiteral) extends StringVarAccess
+
   case class SQStringLiteral(prefix: Option[String], sequence: String) extends StringLiteral
 
-  case class DQStringLiteral(prefix: Option[String], sequence: Seq[DQElement]) extends StringLiteral
-  sealed abstract class DQElement
-  case class DQStringElement(s: String) extends DQElement
-  case class WrappedUnicodeDQElement(value: Either[Seq[Char], Variable]) extends DQElement
-  case class OctalDQElement(digits: Seq[Char]) extends DQElement
-  case class HexDQElement(digits: Seq[Char]) extends DQElement
-  case class ExpressionDQElement(exp: Expression) extends DQElement
-  case class VarDQElement(variable: SimpleNameVar, access: Option[DQVarAccess]) extends DQElement
-  sealed abstract class DQVarAccess
-  case class PropertyDQVarAcc(name: Name) extends DQVarAccess
-  case class NameOffsetDQVarAcc(name: Name) extends DQVarAccess
-  case class VarOffsetDQVarAcc(variable: SimpleNameVar) extends DQVarAccess
-  case class IntOffsetDQVarAcc(integerLiteral: IntegerLiteral) extends DQVarAccess
+  case class DQStringLiteral(prefix: Option[String], sequence: Seq[StringElement]) extends StringLiteral
+  case class DQStringElement(s: String) extends StringElement
+
+  case class HeredocStringLiteral(prefix: Option[String], hdIdentifier: Name, sequence: Seq[StringElement]) extends StringLiteral
+  case class HDStringElement(s: String) extends StringElement
+  case object HDNewLine extends StringElement
 
 
   sealed abstract class IntegerLiteral extends Literal

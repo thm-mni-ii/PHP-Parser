@@ -4,7 +4,7 @@ import ast.Basic._
 import ast.Expressions.SimpleNameVar
 import fastparse.all._
 import parser.literals.Keywords.allKeywords
-import parser.literals.Lexical.whitespace
+import parser.literals.Lexical.{whitespace, wsChars, newline}
 import parser.ExpressionParser.{expression, variable}
 
 /**
@@ -46,6 +46,22 @@ object Literals {
   val relationalOp = P(StringIn("<=>", "<=", ">=", "<", ">").!)
   val unaryOp = P(CharIn("+-!~").!)
 
+
+  val octalStringElement = P("\\" ~ octalDigit.rep(min = 1, max = 3)).map(t => OctalStringElement(t.map(_(0))))
+  val hexStringElement = P("\\" ~ IgnoreCase("x") ~ hexadecimalDigit.rep(min = 1, max = 2)).map(t => HexStringElement(t.map(_(0))))
+  val unicodeStringElement = P("\\u{" ~ (
+    hexadecimalDigit.rep(min = 1).map(t => Left(t.map(_(0)))) |
+      variable.map(Right(_)) ~ whitespace
+    ) ~ "}").map(UnicodeStringElement)
+  val varStringElement = P(variableName ~ ((
+    "->" ~ name).map(PropertyStringVarAcc) | ("[" ~ (
+    name.map(NameOffsetStringVarAcc) |
+      variableName.map(VarOffsetStringVarAcc) |
+      integerLiteral.map(IntOffsetStringVarAcc)
+    ) ~ "]")).?).map(t => VarStringElement(t._1, t._2))
+  val expressionStringElement = P("${" ~ expression ~ "}").map(ExpressionStringElement)
+
+
   val sqEscapeSequence = P("\\".! ~ AnyChar.!).map(t => t._1 + t._2)
   val sqUnescapedSequence = P(CharsWhile(!"\\'".contains(_)).!)
   val sqCharSequence = P((sqEscapeSequence | sqUnescapedSequence).rep).map(_.mkString)
@@ -53,24 +69,19 @@ object Literals {
 
   val dqNormalEscapeSequence = P("\\".! ~ !(CharIn("xX01234567") | "u{") ~ AnyChar.!).map(t => t._1 + t._2)
   val dqUnescapedSequence = P(CharsWhile(!"\\\"$".contains(_)).!)
-
   val dQStringElement = P((dqNormalEscapeSequence | dqUnescapedSequence).rep(1)).map(t => DQStringElement(t.mkString))
-  val dqOctalEscapeElement = P("\\" ~ octalDigit.rep(min = 1, max = 3)).map(t => OctalDQElement(t.map(_(0))))
-  val dqHexEscapeElement = P("\\" ~ IgnoreCase("x") ~ hexadecimalDigit.rep(min = 1, max = 2)).map(t => HexDQElement(t.map(_(0))))
-  val dqUnicodeEscapeElement = P("\\u{" ~ (
-    hexadecimalDigit.rep(min = 1).map(t => Left(t.map(_(0)))) |
-    variable.map(Right(_)) ~ whitespace
-  ) ~ "}").map(WrappedUnicodeDQElement)
-  val dqVarEscapeElement = P(variableName ~ ((
-    "->" ~ name).map(PropertyDQVarAcc) | ("[" ~ (
-    name.map(NameOffsetDQVarAcc) |
-    variableName.map(VarOffsetDQVarAcc) |
-    integerLiteral.map(IntOffsetDQVarAcc)
-  ) ~ "]")).?).map(t => VarDQElement(t._1, t._2))
-  val dqExpressionElement = P("${" ~ expression ~ "}").map(ExpressionDQElement)
-
-  val dqCharSequence = P((dQStringElement | dqOctalEscapeElement | dqHexEscapeElement | dqUnicodeEscapeElement | dqVarEscapeElement | dqExpressionElement).rep)
+  val dqCharSequence = P((dQStringElement | octalStringElement | hexStringElement | unicodeStringElement | varStringElement | expressionStringElement).rep)
   val dqStringLiteral = P(CharIn("bB").!.? ~ "\"" ~ dqCharSequence ~ "\"").map(t => DQStringLiteral(t._1, t._2))
+
+  val hdNormalEscapeSequence = P("\\".! ~ !(CharIn("xX01234567nr") | "u{") ~ AnyChar.!).map(t => t._1 + t._2)
+  val hdUnescapedSequence = P(CharsWhile(!"\\$".contains(_)).!)
+  val hdStringElement = P((hdNormalEscapeSequence | hdUnescapedSequence).rep(1)).map(t => HDStringElement(t.mkString))
+  val hdCharSequence = P((hdStringElement | octalStringElement | hexStringElement | unicodeStringElement | varStringElement | expressionStringElement).rep)
+  val hdStringLiteral = P(CharIn("bB").!.? ~ whitespace ~ "<<<" ~ wsChars ~ ((("\"" ~ name ~ "\"") | name) ~ wsChars ~ newline).flatMap(hdRest)).map(t => HeredocStringLiteral(t._1, t._2._1, t._2._2))
+
+  def hdRest(identifier: Name) : P[(Name, Seq[StringElement])] = P(hdCharSequence ~
+    (newline ~ !(identifier.toString ~ ";".? ~ newline) ~ hdCharSequence).rep ~ identifier.toString ~ ";".? ~ newline
+  ).map(t => (identifier, t._2.foldLeft(t._1)(_ ++ Seq(HDNewLine) ++ _)))
 
   val literal : P[Literal] = P(integerLiteral | floatingLiteral | stringLiteral)
 }
