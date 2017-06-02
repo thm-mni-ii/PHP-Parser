@@ -12,7 +12,7 @@ import parser.literals.Keywords._
 import parser.literals.Literals.{name, variableName}
 
 import parser.Basic.{qualifiedName, semicolonFactory, namespaceName}
-import parser.ExpressionParser.{expression}
+import parser.expressions.ExpressionParser.{expression}
 import parser.expressions.VariableParser.simpleVariable
 import parser.statements.StatementParser.{compoundStmnt, funcHeader}
 

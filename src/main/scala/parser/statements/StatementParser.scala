@@ -13,7 +13,7 @@ import parser.literals.Literals._
 
 import parser.PHPParser.isTagProcessed
 import parser.Basic.{echoStartTag, qualifiedName, semicolonFactory}
-import parser.ExpressionParser.expression
+import parser.expressions.ExpressionParser.expression
 
 import parser.statements.ControlFlowParser._
 import parser.statements.DeclarationParser._

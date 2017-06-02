@@ -4,7 +4,7 @@ import ast.Expressions._
 import ast.Statements.ClassDecl
 import parser.Basic._
 import parser.literals.Keywords._
-import parser.ExpressionParser.expression
+import ExpressionParser.expression
 import parser.expressions.OperatorParser.{assignmentCondExp, argumentExpressionList}
 import parser.literals.Lexical.ws
 import parser.literals.KeywordConversions._

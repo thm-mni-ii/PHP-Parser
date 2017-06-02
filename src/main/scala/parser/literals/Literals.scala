@@ -5,7 +5,7 @@ import ast.Expressions.SimpleNameVar
 import fastparse.all._
 import parser.literals.Keywords.allKeywords
 import parser.literals.Lexical.{whitespace, wsChars, newline}
-import parser.ExpressionParser.{expression}
+import parser.expressions.ExpressionParser.{expression}
 import parser.expressions.VariableParser.variable
 
 /**

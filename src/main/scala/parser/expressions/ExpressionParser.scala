@@ -1,17 +1,13 @@
-package parser
+package parser.expressions
 
 import ast.Expressions._
-import ast.Statements.ClassDecl
-import Basic._
+import fastparse.noApi._
+import parser.expressions.OperatorParser.logicalOrExpr2
+import parser.expressions.VariableParser.{arrayElement, variable}
 import parser.literals.Keywords._
 import parser.literals.Lexical.ws
-import parser.literals.KeywordConversions._
-import fastparse.noApi._
-import parser.literals.WsAPI._
 import parser.literals.Literals._
-import parser.statements.DeclarationParser.classDeclBody
-  import parser.expressions.VariableParser.{variable, arrayElement}
-import parser.expressions.OperatorParser.logicalOrExpr2
+import parser.literals.WsAPI._
 
 object ExpressionParser {
 

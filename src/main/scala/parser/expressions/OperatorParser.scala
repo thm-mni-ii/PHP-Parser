@@ -11,7 +11,7 @@ import parser.literals.WsAPI._
 import parser.literals.Literals._
 import parser.statements.DeclarationParser.classDeclBody
 import parser.expressions.VariableParser.{variable, arrayElement}
-import parser.ExpressionParser.{expression, listIntrinsic, primaryExpWithoutVariable, cloneExp}
+import ExpressionParser.{expression, listIntrinsic, primaryExpWithoutVariable, cloneExp}
 
 /**
   * Created by tobias on 02.06.17.
