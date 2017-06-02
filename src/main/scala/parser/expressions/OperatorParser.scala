@@ -74,7 +74,7 @@ object OperatorParser {
   val prefixDecrementExp : P[Expression] = P("--" ~/ variable).map(PrefixDecrementExp)
   val unaryOpExp : P[Expression] = P(unaryOp ~ (singleExpression | unaryExp)).map(t => UnaryOpExp(t._1,t._2))
   val errorControlExp : P[Expression] = P("@" ~/ expression).map(ErrorControlExp)
-  val shellCommandExp : P[Expression] = P("`" ~~ dqCharSequence ~~ "`").map(ShellCommandExp)
+  val shellCommandExp : P[Expression] = P("`" ~~ dqCommandCharSequence ~~ "`").map(ShellCommandExp)
 
   val castType : P[CastType.Value] = P(arrayCastType | binaryCastType | booleanCastType | boolCastType |
     doubleCastType | integerCastType | intCastType | floatCastType | objectCastType |

@@ -70,9 +70,13 @@ object Literals {
 
   val dqNormalEscapeSequence = P("\\".! ~ !(CharIn("xX01234567") | "u{") ~ AnyChar.!).map(t => t._1 + t._2)
   val dqUnescapedSequence = P(CharsWhile(!"\\\"$".contains(_)).!)
-  val dQStringElement = P((dqNormalEscapeSequence | dqUnescapedSequence).rep(1)).map(t => DQStringElement(t.mkString))
-  val dqCharSequence = P((dQStringElement | octalStringElement | hexStringElement | unicodeStringElement | varStringElement | expressionStringElement).rep)
+  val dqStringElement = P((dqNormalEscapeSequence | dqUnescapedSequence).rep(1)).map(t => DQStringElement(t.mkString))
+  val dqCharSequence = P((dqStringElement | octalStringElement | hexStringElement | unicodeStringElement | varStringElement | expressionStringElement).rep)
   val dqStringLiteral = P(CharIn("bB").!.? ~ "\"" ~ dqCharSequence ~ "\"").map(t => DQStringLiteral(t._1, t._2))
+
+  val dqCommandUnescapedSequence = P(CharsWhile(!"\\`$".contains(_)).!)
+  val dqCommandStringElement = P((dqNormalEscapeSequence | dqCommandUnescapedSequence).rep(1)).map(t => DQStringElement(t.mkString))
+  val dqCommandCharSequence = P((dqCommandStringElement | octalStringElement | hexStringElement | unicodeStringElement | varStringElement | expressionStringElement).rep)
 
   val hdNormalEscapeSequence = P("\\".! ~ !(CharIn("xX01234567") | "u{") ~ AnyChar.!).map(t => t._1 + t._2)
   val hdUnescapedSequence = P(CharsWhile(!"\\\n\r$".contains(_)).!)
