@@ -73,22 +73,30 @@ object Literals {
   val dqCharSequence = P((dQStringElement | octalStringElement | hexStringElement | unicodeStringElement | varStringElement | expressionStringElement).rep)
   val dqStringLiteral = P(CharIn("bB").!.? ~ "\"" ~ dqCharSequence ~ "\"").map(t => DQStringLiteral(t._1, t._2))
 
-  val hdNormalEscapeSequence = P("\\".! ~ !(CharIn("xX01234567nr") | "u{") ~ AnyChar.!).map(t => t._1 + t._2)
-  val hdUnescapedSequence = P(CharsWhile(!"\\$".contains(_)).!)
+  val hdNormalEscapeSequence = P("\\".! ~ !(CharIn("xX01234567") | "u{") ~ AnyChar.!).map(t => t._1 + t._2)
+  val hdUnescapedSequence = P(CharsWhile(!"\\\n\r$".contains(_)).!)
   val hdStringElement = P((hdNormalEscapeSequence | hdUnescapedSequence).rep(1)).map(t => HDStringElement(t.mkString))
   val hdCharSequence = P((hdStringElement | octalStringElement | hexStringElement | unicodeStringElement | varStringElement | expressionStringElement).rep)
   def hdRest(identifier: Name) : P[(Name, Seq[StringElement])] = P(hdCharSequence ~
-    (newline ~ !(identifier.toString ~ ";".? ~ newline) ~ hdCharSequence).rep ~ identifier.toString ~ ";".? ~ newline
+    (newline ~ !(identifier.name ~ ";".? ~ newline) ~ hdCharSequence).rep ~
+    newline ~ identifier.name ~ &(";".? ~ newline)
   ).map(t => (identifier, t._2.foldLeft(t._1)(_ ++ Seq(HDNewLine) ++ _)))
-  val hdStringLiteral = P(CharIn("bB").!.? ~ whitespace ~ "<<<" ~ wsChars ~ ((("\"" ~ name ~ "\"") | name) ~ wsChars ~ newline).flatMap(hdRest)).map(t => HeredocStringLiteral(t._1, t._2._1, t._2._2))
+  val hdStringLiteral = P(CharIn("bB").!.? ~ whitespace ~ "<<<" ~ wsChars.rep ~
+    ((("\"" ~ name ~ "\"") | name) ~ wsChars.rep ~ newline)
+      .flatMap(hdRest))
+    .map(t => HeredocStringLiteral(t._1, t._2._1, t._2._2))
 
-  val ndNormalEscapeSequence = P("\\".! ~ !CharIn("nr") ~ AnyChar.!).map(t => t._1 + t._2)
-  val ndUnescapedSequence = P(CharsWhile(!"\\".contains(_)).!)
+  val ndNormalEscapeSequence = P("\\".! ~ AnyChar.!).map(t => t._1 + t._2)
+  val ndUnescapedSequence = P(CharsWhile(!"\\\n\r".contains(_)).!)
   val ndStringElement = P((ndNormalEscapeSequence | ndUnescapedSequence).rep(1)).map(t => NDStringElement(t.mkString))
   def ndRest(identifier: Name) : P[(Name, Seq[StringElement])] = P(ndStringElement ~
-    (newline ~ !(identifier.toString ~ ";".? ~ newline) ~ ndStringElement).rep ~ identifier.toString ~ ";".? ~ newline
+    (newline ~ !(identifier.name ~ ";".? ~ newline) ~ ndStringElement).rep ~
+    newline ~ identifier.name ~ &(";".? ~ newline)
   ).map(t => (identifier, t._2.foldLeft(Seq[StringElement](t._1))(_ ++ Seq(NDNewLine, _))))
-  val ndStringLiteral = P(CharIn("bB").!.? ~ whitespace ~ "<<<" ~ wsChars ~ ((("\"" ~ name ~ "\"") | name) ~ wsChars ~ newline).flatMap(ndRest)).map(t => HeredocStringLiteral(t._1, t._2._1, t._2._2))
+  val ndStringLiteral = P(CharIn("bB").!.? ~ whitespace ~ "<<<" ~ wsChars.rep ~
+    ("\'" ~ name ~ "\'" ~ wsChars.rep ~ newline)
+      .flatMap(ndRest))
+    .map(t => HeredocStringLiteral(t._1, t._2._1, t._2._2))
 
   val literal : P[Literal] = P(integerLiteral | floatingLiteral | stringLiteral)
 }
