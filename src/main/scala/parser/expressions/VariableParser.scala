@@ -43,15 +43,15 @@ object VariableParser {
     "(" ~ expression ~ ")").map(ExpressionVar)
 
   val arrayElement : P[ArrayElement] = P(
-    ("&" ~ expression).map(ArrayElement(None, _, true))
+    ("&" ~ NoCut(expression)).map(ArrayElement(None, _, true))
       | (expression ~ ("=>" ~ "&".!.? ~ expression).?).map(t =>
         if(t._2.isDefined) ArrayElement(Some(t._1), t._2.get._2, t._2.get._1.isDefined)
         else ArrayElement(None, t._1, false))
   )
 
   val arrayCreationVar : P[ArrayCreationVar] = P(
-    ARRAY ~ "(" ~ !"," ~ arrayElement.rep(sep=",") ~ ",".? ~ ")"
-      | "[" ~ !"," ~ arrayElement.rep(sep=",") ~ ",".? ~ "]"
+    ARRAY ~ "(" ~/ !"," ~ arrayElement.rep(sep=("," ~ !")").~/) ~ ",".? ~ ")"
+      | "[" ~/ !"," ~ arrayElement.rep(sep=("," ~ !"]").~/) ~ ",".? ~ "]"
   ).map(ArrayCreationVar)
 
   val memberCallStaticAccFactory : P[Variable => Variable] = P(
@@ -61,9 +61,6 @@ object VariableParser {
   val simpleVarStaticAccFactory : P[Variable => Variable] = P(
     "::" ~ simpleVariable).map(t => (x: Variable) => SimpleVarStaticAcc(x, t))
 
-  val classConstantAccFactory : P[Variable => Variable] = P(
-    "::" ~ name).map(t => (x: Variable) => ClassConstAcc(x, t))
-
   val arrayAccFactory : P[Variable => Variable] = P(
     "[" ~/ expression.? ~ "]").map(t => (x: Variable) => ArrayAcc(x, t))
 
@@ -71,7 +68,7 @@ object VariableParser {
     "{" ~/ expression ~ "}").map(t => (x: Variable) => BlockAcc(x, t))
 
   val memberPropertyAccFactory : P[Variable => Variable] = P(
-    "->" ~ memberName ~ ("(" ~/ argumentExpressionList ~ ")").?).map(t =>
+    "->" ~/ memberName ~ ("(" ~/ argumentExpressionList ~ ")").?).map(t =>
       if(t._2.isDefined) (x) => MemberCallPropertyAcc(x, t._1, t._2.get)
       else (x) => MemberPropertyAcc(x, t._1)
   )

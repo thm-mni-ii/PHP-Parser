@@ -83,7 +83,7 @@ object Literals {
     newline ~ identifier.name ~ &(";".? ~ newline)
   ).map(t => (identifier, t._2.foldLeft(t._1)(_ ++ Seq(HDNewLine) ++ _)))
   val hdStringLiteral = P(CharIn("bB").!.? ~ whitespace ~ "<<<" ~ wsChars.rep ~
-    ((("\"" ~ name ~ "\"") | name) ~ wsChars.rep ~ newline)
+    ((("\"" ~/ name ~ "\"") | name) ~/ wsChars.rep ~ newline)
       .flatMap(hdRest))
     .map(t => HeredocStringLiteral(t._1, t._2._1, t._2._2))
 
@@ -95,7 +95,7 @@ object Literals {
     newline ~ identifier.name ~ &(";".? ~ newline)
   ).map(t => (identifier, t._2.foldLeft(Seq[StringElement](t._1))(_ ++ Seq(NDNewLine, _))))
   val ndStringLiteral = P(CharIn("bB").!.? ~ whitespace ~ "<<<" ~ wsChars.rep ~
-    ("\'" ~ name ~ "\'" ~ wsChars.rep ~ newline)
+    ("\'" ~/ name ~ "\'" ~ wsChars.rep ~ newline)
       .flatMap(ndRest))
     .map(t => HeredocStringLiteral(t._1, t._2._1, t._2._2))
 
