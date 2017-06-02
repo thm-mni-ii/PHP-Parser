@@ -72,7 +72,7 @@ object OperatorParser {
 
   val prefixIncrementExp : P[Expression] = P("++" ~/ variable).map(PrefixIncrementExp)
   val prefixDecrementExp : P[Expression] = P("--" ~/ variable).map(PrefixDecrementExp)
-  val unaryOpExp : P[Expression] = P(unaryOp ~ unaryExp).map(t => UnaryOpExp(t._1,t._2))
+  val unaryOpExp : P[Expression] = P(unaryOp ~ (singleExpression | unaryExp)).map(t => UnaryOpExp(t._1,t._2))
   val errorControlExp : P[Expression] = P("@" ~/ expression).map(ErrorControlExp)
   val shellCommandExp : P[Expression] = P("`" ~~ dqCharSequence ~~ "`").map(ShellCommandExp)
 

@@ -56,6 +56,8 @@ object ExpressionParser {
   val anonymousFuncExp : P[Expression] = P(Fail)
   val enclosedExp : P[Expression] = P("(" ~ expression ~ ")")
 
+  val singleExpression : P[Expression] = P(yieldExp | requireOnceExp | requireExp | includeOnceExp | includeExp)
+
   //unused part
 
   //val expression : P[Expression] = P(exp1).map(_ => SpecialExp())
