@@ -10,7 +10,7 @@ import ast.Statements._
 
 import parser.literals.Keywords._
 
-import parser.Basic.{semicolonFactory, wsOrSemicolon}
+import parser.Basic.{semicolonFactory, wsExp, semicolon}
 import parser.literals.Literals.{integerLiteral, name}
 import parser.expressions.ExpressionParser.expression
 import parser.statements.StatementParser.{emptyStmnt, statement, statements}
@@ -28,7 +28,7 @@ object ControlFlowParser {
       (ELSE ~ ":" ~/ statements).? ~ ENDIF ~/ semicolonFactory) |
     (statement ~/
       (ELSEIF ~/ "(" ~ expression ~ ")" ~/ statement).rep ~
-      (ELSE ~/ statement).?)
+      (ELSE ~~ &(wsExp | semicolon) ~/ statement).?)
       .map(t => (Seq(t._1), t._2.map(e => (e._1, Seq(e._2))), t._3.map(Seq(_)), None))
   )
 
@@ -38,7 +38,7 @@ object ControlFlowParser {
 
 
   private val caseBlock : P[CaseBlock] =
-    P(CASE ~~ ws ~/ expression ~ ((":" ~/ statements) | emptyStmnt.map(Seq(_))))
+    P(CASE ~~ &(wsExp) ~/ expression ~ ((":" ~/ statements) | emptyStmnt.map(Seq(_))))
       .map(t => CaseBlock(t._1, t._2))
 
   private val defaultBlock : P[DefaultBlock] =
@@ -69,7 +69,7 @@ object ControlFlowParser {
 
 
   val doStmnt : P[DoStmnt] =
-    P(DO ~~ &(wsOrSemicolon) ~/ statement ~/ WHILE ~/ "(" ~/ expression ~ ")" ~/ semicolonFactory)
+    P(DO ~~ &(wsExp | semicolon) ~/ statement ~/ WHILE ~/ "(" ~/ expression ~ ")" ~/ semicolonFactory)
       .map(t => DoStmnt(t._2, t._1, t._3))
 
 
@@ -93,7 +93,7 @@ object ControlFlowParser {
   )
 
   val foreachStmnt : P[ForeachStmnt] =
-    P(FOREACH ~ "(" ~/ expression ~~ &(ws) ~/ AS ~~ ws ~/ ((
+    P(FOREACH ~ "(" ~/ expression ~~ &(ws) ~/ AS ~~ wsExp ~/ ((
       "&" ~ expression).map(t => (None, true, t)) |
       (expression ~ ("=>" ~ "&".!.? ~ expression).?)
         .map(t => if(t._2.isDefined) (Some(t._1), t._2.get._1.isDefined, t._2.get._2) else (None, false, t._1))
@@ -107,8 +107,8 @@ object ControlFlowParser {
   // jump statements
 
   val jumpStmnt : P[JumpStmnt] = P((GOTO ~/ name ~ semicolonFactory).map(t => GotoStmnt(t._1, t._2)) |
-    (CONTINUE ~~ &(wsOrSemicolon) ~/ integerLiteral.? ~ semicolonFactory).map(t => ContinueStmnt(t._1, t._2)) |
-    (BREAK ~~ &(wsOrSemicolon) ~/ integerLiteral.? ~ semicolonFactory).map(t => BreakStmnt(t._1, t._2)) |
-    (RETURN ~~ &(wsOrSemicolon) ~/ expression.? ~ semicolonFactory).map(t => ReturnStmnt(t._1, t._2)) |
-    (THROW ~~ &(ws) ~/ expression ~ semicolonFactory).map(t => ThrowStmnt(t._1, t._2)))
+    (CONTINUE ~~ &(ws | semicolon) ~/ integerLiteral.? ~ semicolonFactory).map(t => ContinueStmnt(t._1, t._2)) |
+    (BREAK ~~ &(ws | semicolon) ~/ integerLiteral.? ~ semicolonFactory).map(t => BreakStmnt(t._1, t._2)) |
+    (RETURN ~~ &(wsExp | semicolon) ~/ expression.? ~ semicolonFactory).map(t => ReturnStmnt(t._1, t._2)) |
+    (THROW ~~ &(wsExp) ~/ expression ~ semicolonFactory).map(t => ThrowStmnt(t._1, t._2)))
 }

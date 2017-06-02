@@ -37,6 +37,8 @@ object Basic {
   val startTag = P(normalStartTag | echoStartTag)
 
   val wsOrSemicolon = P(ws | ";" | "?>")
+  val wsExp = P(ws | "(")
+  val semicolon = P(";" | "?>")
 
   def qualifiedName : P[QualifiedName] = P((NAMESPACE ~ "\\" ~ (name ~ "\\").rep ~ name).map(t => QualifiedName(NamespaceType.LOCAL, t._1, t._2)) |
     ("\\".!.? ~ (name ~ "\\").rep ~ name).map(t =>

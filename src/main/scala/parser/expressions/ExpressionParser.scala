@@ -9,6 +9,7 @@ import ast.Expressions._
 import parser.literals.Keywords._
 import parser.literals.Literals._
 
+import parser.Basic.wsExp
 import parser.statements.StatementParser.{compoundStmnt, anonymousFuncHeader}
 import parser.expressions.OperatorParser.logicalOrExpr2
 import parser.expressions.VariableParser.{arrayElement, variable}
@@ -18,17 +19,15 @@ object ExpressionParser {
 
   val expression : P[Expression] = P(yieldExp | requireOnceExp | requireExp | includeOnceExp | includeExp | logicalOrExpr2)
 
-  val space = P(&(ws | "("))
-
-  val requireExp : P[RequireExp] = P(REQUIRE ~~ space ~/ expression).map(RequireExp)
-  val requireOnceExp : P[RequireOnceExp] = P(REQUIRE_ONCE ~~ space ~/ expression).map(RequireOnceExp)
-  val includeExp : P[IncludeExp] = P(INCLUDE ~~ space ~/ expression).map(IncludeExp)
-  val includeOnceExp : P[IncludeOnceExp] = P(INCLUDE_ONCE ~~ space ~/ expression).map(IncludeOnceExp)
+  val requireExp : P[RequireExp] = P(REQUIRE ~~ &(wsExp) ~/ expression).map(RequireExp)
+  val requireOnceExp : P[RequireOnceExp] = P(REQUIRE_ONCE ~~ &(wsExp) ~/ expression).map(RequireOnceExp)
+  val includeExp : P[IncludeExp] = P(INCLUDE ~~ &(wsExp) ~/ expression).map(IncludeExp)
+  val includeOnceExp : P[IncludeOnceExp] = P(INCLUDE_ONCE ~~ &(wsExp) ~/ expression).map(IncludeOnceExp)
   val yieldExp : P[Expression] = P(
-    (YIELD ~~ ws ~ FROM ~~ space ~/ expression).map(YieldFromExp)
-      | (YIELD ~~ space ~/ arrayElement).map(YieldExp))
+    (YIELD ~~ ws ~ FROM ~~ &(wsExp) ~/ expression).map(YieldFromExp)
+      | (YIELD ~~ &(wsExp) ~/ arrayElement).map(YieldExp))
 
-  val cloneExp : P[Expression] = P(CLONE ~~ space ~/ expression).map(CloneExp)
+  val cloneExp : P[Expression] = P(CLONE ~~ &(wsExp) ~/ expression).map(CloneExp)
 
   val primaryExpWithoutVariable : P[Expression] = P(constAccExp |
     literal | intrinsic | anonymousFuncExp)
@@ -41,7 +40,7 @@ object ExpressionParser {
       (",".? ~ NoCut(expression).rep(sep=",".rep(1))).map(Left(_))
         | ((expression ~ "=>" ~ expression).rep(sep=",") ~ ",".?).map(Right(_)))
       ~ ")").map(ListIntrinsic)
-  val echoIntrinsic : P[EchoIntrinsic] = P(ECHO ~~ space ~/ expression.rep(min=1, sep=",")).map(EchoIntrinsic)
+  val echoIntrinsic : P[EchoIntrinsic] = P(ECHO ~~ &(wsExp) ~/ expression.rep(min=1, sep=",")).map(EchoIntrinsic)
   val unsetIntrinsic : P[UnsetIntrinsic] = P(UNSET ~ "(" ~ variable.rep(1, sep=",") ~ ")").map(UnsetIntrinsic)
 
   val emptyIntrinsic : P[EmptyIntrinsic] = P(EMPTY ~ "(" ~/ expression ~ ")").map(EmptyIntrinsic)
@@ -49,12 +48,12 @@ object ExpressionParser {
   val exitIntrinsic : P[ExitIntrinsic] = P(EXIT ~ ("(" ~/ expression.? ~ ")").? |
     (DIE ~ ("(" ~/ expression.? ~ ")").?)).map(t => ExitIntrinsic(t.getOrElse(None)))
   val issetIntrinsic : P[IssetIntrinsic] = P(ISSET ~ "(" ~/ variable.rep(1, sep=",") ~ ")").map(IssetIntrinsic)
-  val printIntrinsic : P[PrintIntrinsic] = P(PRINT ~~ space ~/ expression).map(PrintIntrinsic)
+  val printIntrinsic : P[PrintIntrinsic] = P(PRINT ~~ &(wsExp) ~/ expression).map(PrintIntrinsic)
 
   val intrinsicConstruct : P[Expression] = P(echoIntrinsic | unsetIntrinsic | listIntrinsic)
   val intrinsicOperator : P[Expression] = P(emptyIntrinsic | evalIntrinsic | exitIntrinsic | issetIntrinsic | printIntrinsic)
   val intrinsic : P[Expression] = P(intrinsicOperator | intrinsicConstruct)
-  
+
   val anonymousFuncExp : P[Expression] = P(STATIC.!.?.map(_.isDefined) ~ anonymousFuncHeader ~ compoundStmnt)
     .map(t => AnonymousFunctionCreationExp(t._1, t._2._1, t._2._2, t._3))
 

@@ -21,8 +21,6 @@ import parser.expressions.ExpressionParser.{expression, listIntrinsic, primaryEx
   */
 object OperatorParser {
 
-  val space = P(&(ws | "("))
-
   val logicalOrExpr2 : P[Expression] = P(logicalXOrExp.rep(sep=OR.~/, min=1)).map(_.reduceLeft(LogicalOrExp2))
   val logicalXOrExp : P[Expression] = P(logicalAndExp2.rep(sep=XOR.~/, min=1)).map(_.reduceLeft(LogicalXOrExp))
   val logicalAndExp2 : P[Expression] = P(condExp.rep(sep=AND.~/, min=1)).map(_.reduceLeft(LogicalAndExp2))
@@ -67,7 +65,7 @@ object OperatorParser {
     .map(t => if(t._2.isDefined) ExponentiationExp(t._1, t._2.get) else t._1)
 
   val instanceOfExp : P[Expression] = P(unaryExp ~~
-    (ws ~ INSTANCEOF ~~ space ~/ (qualifiedName.map(Right(_)) | expression.map(Left(_)))).?
+    (ws ~ INSTANCEOF ~~ &(wsExp) ~/ (qualifiedName.map(Right(_)) | expression.map(Left(_)))).?
   ).map(t => if(t._2.isDefined) InstanceOfExp(t._1, t._2.get) else t._1)
 
   val prefixIncrementExp : P[Expression] = P("++" ~/ variable).map(PrefixIncrementExp)
