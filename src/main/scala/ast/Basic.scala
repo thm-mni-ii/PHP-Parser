@@ -46,6 +46,10 @@ object Basic {
   case class HDStringElement(s: String) extends StringElement
   case object HDNewLine extends StringElement
 
+  case class NowdocStringLiteral(prefix: Option[String], ndIdentifier: Name, sequence: Seq[StringElement]) extends StringLiteral
+  case class NDStringElement(s: String) extends StringElement
+  case object NDNewLine extends StringElement
+
 
   sealed abstract class IntegerLiteral extends Literal
   case class DecimalLiteral(value: String) extends IntegerLiteral

@@ -22,7 +22,7 @@ object Literals {
 
   val variableName : P[SimpleNameVar] = P("$" ~ nameWithKeyword).map(SimpleNameVar)
 
-  val stringLiteral : P[StringLiteral] = P(sqStringLiteral | dqStringLiteral)
+  val stringLiteral : P[StringLiteral] = P(sqStringLiteral | dqStringLiteral | hdStringLiteral | ndStringLiteral)
 
   val digit = P(CharIn("0123456789").!)
   val nonZeroDigit = P(CharIn("123456789").!)
@@ -77,11 +77,18 @@ object Literals {
   val hdUnescapedSequence = P(CharsWhile(!"\\$".contains(_)).!)
   val hdStringElement = P((hdNormalEscapeSequence | hdUnescapedSequence).rep(1)).map(t => HDStringElement(t.mkString))
   val hdCharSequence = P((hdStringElement | octalStringElement | hexStringElement | unicodeStringElement | varStringElement | expressionStringElement).rep)
-  val hdStringLiteral = P(CharIn("bB").!.? ~ whitespace ~ "<<<" ~ wsChars ~ ((("\"" ~ name ~ "\"") | name) ~ wsChars ~ newline).flatMap(hdRest)).map(t => HeredocStringLiteral(t._1, t._2._1, t._2._2))
-
   def hdRest(identifier: Name) : P[(Name, Seq[StringElement])] = P(hdCharSequence ~
     (newline ~ !(identifier.toString ~ ";".? ~ newline) ~ hdCharSequence).rep ~ identifier.toString ~ ";".? ~ newline
   ).map(t => (identifier, t._2.foldLeft(t._1)(_ ++ Seq(HDNewLine) ++ _)))
+  val hdStringLiteral = P(CharIn("bB").!.? ~ whitespace ~ "<<<" ~ wsChars ~ ((("\"" ~ name ~ "\"") | name) ~ wsChars ~ newline).flatMap(hdRest)).map(t => HeredocStringLiteral(t._1, t._2._1, t._2._2))
+
+  val ndNormalEscapeSequence = P("\\".! ~ !CharIn("nr") ~ AnyChar.!).map(t => t._1 + t._2)
+  val ndUnescapedSequence = P(CharsWhile(!"\\".contains(_)).!)
+  val ndStringElement = P((ndNormalEscapeSequence | ndUnescapedSequence).rep(1)).map(t => NDStringElement(t.mkString))
+  def ndRest(identifier: Name) : P[(Name, Seq[StringElement])] = P(ndStringElement ~
+    (newline ~ !(identifier.toString ~ ";".? ~ newline) ~ ndStringElement).rep ~ identifier.toString ~ ";".? ~ newline
+  ).map(t => (identifier, t._2.foldLeft(Seq[StringElement](t._1))(_ ++ Seq(NDNewLine, _))))
+  val ndStringLiteral = P(CharIn("bB").!.? ~ whitespace ~ "<<<" ~ wsChars ~ ((("\"" ~ name ~ "\"") | name) ~ wsChars ~ newline).flatMap(ndRest)).map(t => HeredocStringLiteral(t._1, t._2._1, t._2._2))
 
   val literal : P[Literal] = P(integerLiteral | floatingLiteral | stringLiteral)
 }
