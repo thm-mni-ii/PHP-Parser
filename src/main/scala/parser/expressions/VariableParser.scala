@@ -1,17 +1,17 @@
 package parser.expressions
 
-import ast.Expressions._
-import ast.Statements.ClassDecl
-import parser.Basic._
-import parser.literals.Keywords._
-import ExpressionParser.expression
-import parser.expressions.OperatorParser.{assignmentCondExp, argumentExpressionList}
-import parser.literals.Lexical.ws
-import parser.literals.KeywordConversions._
 import fastparse.noApi._
 import parser.literals.WsAPI._
+
+import ast.Expressions._
+
+import parser.literals.Keywords._
+import parser.literals.KeywordConversions._
 import parser.literals.Literals._
-import parser.statements.DeclarationParser.classDeclBody
+
+import parser.Basic._
+import parser.expressions.ExpressionParser.expression
+import parser.expressions.OperatorParser.argumentExpressionList
 
 /**
   * Created by tobias on 02.06.17.

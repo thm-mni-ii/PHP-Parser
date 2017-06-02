@@ -1,17 +1,20 @@
 package parser.expressions
 
-import ast.Expressions._
-import ast.Statements.ClassDecl
-import parser.Basic._
-import parser.literals.Keywords._
-import parser.literals.Lexical.ws
-import parser.literals.KeywordConversions._
 import fastparse.noApi._
 import parser.literals.WsAPI._
+import parser.literals.Lexical.ws
+
+import ast.Expressions._
+import ast.Statements.ClassDecl
+
+import parser.literals.Keywords._
+import parser.literals.KeywordConversions._
 import parser.literals.Literals._
+
+import parser.Basic._
 import parser.statements.DeclarationParser.classDeclBody
 import parser.expressions.VariableParser.{variable, arrayElement}
-import ExpressionParser.{expression, listIntrinsic, primaryExpWithoutVariable, cloneExp}
+import parser.expressions.ExpressionParser.{expression, listIntrinsic, primaryExpWithoutVariable, cloneExp}
 
 /**
   * Created by tobias on 02.06.17.

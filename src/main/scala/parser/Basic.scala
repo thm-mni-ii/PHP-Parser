@@ -1,13 +1,16 @@
 package parser
 
-import ast.Basic._
 import fastparse.noApi._
-import parser.PHPParser._
-import parser.statements.StatementParser.statement
 import parser.literals.WsAPI._
+import parser.literals.Lexical.ws
+
 import parser.literals.Keywords.{PHP, NAMESPACE}
 import parser.literals.Literals.name
-import parser.literals.Lexical.ws
+
+import ast.Basic._
+
+import parser.PHPParser._
+import parser.statements.StatementParser.statement
 
 object Basic {
 
