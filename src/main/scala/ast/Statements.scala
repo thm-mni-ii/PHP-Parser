@@ -1,7 +1,7 @@
 package ast
 
-import ast.Expressions.{Expression, SimpleNameVar, SimpleVar}
 import ast.Basic._
+import ast.Expressions.{Expression, SimpleNameVar, SimpleVar}
 
 object Statements {
 

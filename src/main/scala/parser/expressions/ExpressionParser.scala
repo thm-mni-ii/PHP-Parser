@@ -29,7 +29,7 @@ object ExpressionParser {
   val cloneExp : P[Expression] = P(CLONE ~~ space ~/ expression).map(CloneExp)
 
   val primaryExpWithoutVariable : P[Expression] = P(constAccExp |
-    literal | intrinsic | anonymousFuncExp | enclosedExp)
+    literal | intrinsic | anonymousFuncExp)
 
   //unnecessary
   val constAccExp : P[Expression] = P(Fail)
@@ -54,7 +54,6 @@ object ExpressionParser {
   val intrinsic : P[Expression] = P(intrinsicOperator | intrinsicConstruct)
 
   val anonymousFuncExp : P[Expression] = P(Fail)
-  val enclosedExp : P[Expression] = P("(" ~ expression ~ ")")
 
   val singleExpression : P[Expression] = P(yieldExp | requireOnceExp | requireExp | includeOnceExp | includeExp)
 

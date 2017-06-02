@@ -82,7 +82,7 @@ object Expressions {
   }
 
   case class QualifiedNameVar(name: QualifiedName) extends Variable
-  case class ExpressionVar(exp: Expression) extends Variable
+  case class EnclosedExp(exp: Expression) extends Variable
   case class StringLiteralVar(literal: StringLiteral) extends Variable
 
   sealed abstract class MemberName

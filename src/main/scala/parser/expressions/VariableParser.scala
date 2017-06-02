@@ -13,6 +13,7 @@ import parser.Basic._
 import parser.expressions.ExpressionParser.expression
 import parser.expressions.OperatorParser.argumentExpressionList
 
+
 /**
   * Created by tobias on 02.06.17.
   */
@@ -40,8 +41,8 @@ object VariableParser {
   val stringLiteralVar : P[Variable] = P(
     stringLiteral).map(StringLiteralVar)
 
-  val expressionVar : P[ExpressionVar] = P(
-    "(" ~ expression ~ ")").map(ExpressionVar)
+  val enclosedExp : P[EnclosedExp] = P(
+    "(" ~ expression ~ ")").map(EnclosedExp)
 
   val arrayElement : P[ArrayElement] = P(
     ("&" ~ NoCut(expression)).map(ArrayElement(None, _, true))
@@ -81,7 +82,7 @@ object VariableParser {
     qualifiedNameVar ~ directCallAccFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1)
 
   val expressionVarWithCall : P[Variable] = P(
-    expressionVar ~ directCallAccFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1)
+    enclosedExp ~ directCallAccFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1)
 
   val singleVariable : P[Variable] = P(
     simpleVariable | arrayCreationVar | stringLiteralVar
