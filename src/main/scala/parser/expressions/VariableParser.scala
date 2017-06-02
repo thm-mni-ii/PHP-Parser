@@ -42,7 +42,7 @@ object VariableParser {
     stringLiteral).map(StringLiteralVar)
 
   val enclosedExp : P[EnclosedExp] = P(
-    "(" ~ expression ~ ")").map(EnclosedExp)
+    "(" ~/ expression ~ ")").map(EnclosedExp)
 
   val arrayElement : P[ArrayElement] = P(
     ("&" ~ NoCut(expression)).map(ArrayElement(None, _, true))
@@ -78,19 +78,13 @@ object VariableParser {
   val directCallAccFactory : P[Variable => Variable] = P(
     "(" ~/ argumentExpressionList ~ ")").map(t => (x: Variable) => CallAccessor(x, t))
 
-  val qualifiedNameVarWithCall : P[Variable] = P(
-    qualifiedNameVar ~ directCallAccFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1)
-
-  val expressionVarWithCall : P[Variable] = P(
-    enclosedExp ~ directCallAccFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1)
-
   val singleVariable : P[Variable] = P(
     simpleVariable | arrayCreationVar | stringLiteralVar
-      | scopeAccVar | qualifiedNameVarWithCall | expressionVarWithCall)
+      | scopeAccVar | qualifiedNameVar | enclosedExp)
 
   val variable : P[Variable] = P(
     singleVariable
-      ~ (memberCallStaticAccFactory | simpleVarStaticAccFactory | arrayAccFactory | blockAccFactory | memberPropertyAccFactory).rep
+      ~ (memberCallStaticAccFactory | simpleVarStaticAccFactory | directCallAccFactory | arrayAccFactory | blockAccFactory | memberPropertyAccFactory).rep
   ).map(t => t._2.foldLeft(t._1)((a,b) => b(a)))
 
 }
