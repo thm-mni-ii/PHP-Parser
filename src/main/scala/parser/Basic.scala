@@ -16,16 +16,16 @@ object Basic {
 
   def script : P[Script] = {
     isTagProcessed = true
-    P(text ~ normalStartTag.? ~ statement.rep ~ End).map(t => {
+    P(text ~~ normalStartTag.? ~ statement.rep ~ End).map(t => {
       isTagProcessed = t._2.isDefined
       Script(t._1, t._3)
     })
   }
 
-  val text : P[Text] = P((!startTag ~ AnyChar.!).rep).map(t => Text(t.mkString))
+  val text : P[Text] = P((!startTag ~~ AnyChar.!).repX).map(t => Text(t.mkString))
 
   def semicolonFactory : P[Option[Text]] =
-    P(";".!.map(_ => None) | ("?>" ~ text ~ normalStartTag.?).map(t => {
+    P(";".!.map(_ => None) | ("?>" ~~ text ~~ normalStartTag.?).map(t => {
       isTagProcessed = t._2.isDefined
       Some(t._1)
     })
