@@ -49,7 +49,7 @@ object Literals {
 
 
   val octalStringElement = P("\\" ~ octalDigit.rep(min = 1, max = 3)).map(t => OctalStringElement(t.map(_(0))))
-  val hexStringElement = P("\\" ~ IgnoreCase("x") ~ hexadecimalDigit.rep(min = 1, max = 2)).map(t => HexStringElement(t.map(_(0))))
+  val hexStringElement = P("\\" ~ IgnoreCase("x") ~ (hexadecimalDigit.rep(min = 1, max = 2) | "{" ~ hexadecimalDigit.rep ~"}")).map(t => HexStringElement(t.map(_(0))))
   val unicodeStringElement = P("\\u{" ~ (
     hexadecimalDigit.rep(min = 1).map(t => Left(t.map(_(0)))) |
       variable.map(Right(_)) ~ whitespace
