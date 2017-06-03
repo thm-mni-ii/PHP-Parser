@@ -38,11 +38,11 @@ object ControlFlowParser {
 
 
   private val caseBlock : P[CaseBlock] =
-    P(CASE ~~ &(wsExp) ~/ expression ~ ((":" ~/ statements) | emptyStmnt.map(Seq(_))))
+    P(CASE ~~ &(wsExp) ~/ expression ~ ((":" ~/ statements) | statement.rep(1)))
       .map(t => CaseBlock(t._1, t._2))
 
   private val defaultBlock : P[DefaultBlock] =
-    P(DEFAULT ~ (":" ~/ statements | emptyStmnt.map(Seq(_)))).map(DefaultBlock)
+    P(DEFAULT ~ (":" ~/ statements | statement.rep(1))).map(DefaultBlock)
 
   private val switchBody : P[(Seq[SwitchBlock], Option[Text])] =
     P((":" ~/ (caseBlock | defaultBlock).rep ~ ENDSWITCH ~ semicolonFactory) |
