@@ -37,7 +37,7 @@ object ExpressionParser {
 
   val listIntrinsic : P[ListIntrinsic] = P(
     LIST ~ "(" ~/ (
-      (",".? ~ NoCut(expression).rep(sep=",".rep(1))).map(Left(_))
+      (",".rep ~ NoCut(expression).rep(sep=",".rep(1))).map(Left(_))
         | ((expression ~ "=>" ~ expression).rep(sep=",") ~ ",".?).map(Right(_)))
       ~ ")").map(ListIntrinsic)
   val echoIntrinsic : P[EchoIntrinsic] = P(ECHO ~~ &(wsExp) ~/ expression.rep(min=1, sep=",")).map(EchoIntrinsic)

@@ -78,9 +78,8 @@ object Literals {
   val dqCommandStringElement = P((dqNormalEscapeSequence | dqCommandUnescapedSequence).rep(1)).map(t => DQStringElement(t.mkString))
   val dqCommandCharSequence = P((dqCommandStringElement | octalStringElement | hexStringElement | unicodeStringElement | varStringElement | expressionStringElement).rep)
 
-  val hdNormalEscapeSequence = P("\\".! ~ !(CharIn("xX01234567") | "u{") ~ AnyChar.!).map(t => t._1 + t._2)
   val hdUnescapedSequence = P(CharsWhile(!"\\\n\r$".contains(_)).!)
-  val hdStringElement = P((hdNormalEscapeSequence | hdUnescapedSequence).rep(1)).map(t => HDStringElement(t.mkString))
+  val hdStringElement = P((dqNormalEscapeSequence | hdUnescapedSequence).rep(1)).map(t => HDStringElement(t.mkString))
   val hdCharSequence = P((hdStringElement | octalStringElement | hexStringElement | unicodeStringElement | varStringElement | expressionStringElement).rep)
   def hdRest(identifier: Name) : P[(Name, Seq[StringElement])] = P(hdCharSequence ~
     (newline ~ !(identifier.name ~ ";".? ~ newline) ~ hdCharSequence).rep ~

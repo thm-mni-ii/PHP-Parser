@@ -83,10 +83,10 @@ object OperatorParser {
     prefixIncrementExp | prefixDecrementExp | unaryOpExp
       | errorControlExp | shellCommandExp | castExp | postfixExp)
 
-  val listAssignment : P[Expression] = P(NoCut(listIntrinsic) ~ "=" ~/ condExp).map(t => ListAssignmentExp(t._1, t._2))
+  val listAssignment : P[Expression] = P(NoCut(listIntrinsic) ~ "=" ~/ (condExp | singleExpression)).map(t => ListAssignmentExp(t._1, t._2))
   val assignmentFactory : P[Variable => Expression] = P(
-    ("=" ~ "&".!.? ~ condExp).map(e => (x: Variable) => SimpleAssignmentExp(e._1.isDefined, x, e._2))
-      | (assignmentOp ~~ "=" ~/ condExp).map(e => (x: Variable) => CompoundAssignmentExp(e._1, x, e._2)))
+    ("=" ~ "&".!.? ~ (condExp | singleExpression)).map(e => (x: Variable) => SimpleAssignmentExp(e._1.isDefined, x, e._2))
+      | (assignmentOp ~~ "=" ~/ (condExp | singleExpression)).map(e => (x: Variable) => CompoundAssignmentExp(e._1, x, e._2)))
 
   val postfixOperatorFactory : P[Variable => Expression] = P(
     "++".!.map(_ => (x: Variable) => PostfixIncrementExp(x))
@@ -95,10 +95,10 @@ object OperatorParser {
       | assignmentFactory)
 
   val objectCreationExp : P[Expression] = P(
-    NEW ~~ ws ~/ ((
+    NEW ~~ &(wsExp) ~/ ((
       CLASS ~~ &("(" | "{" | ws) ~/ ("(" ~/ argumentExpressionList ~ ")").? ~ classDeclBody)
         .map(t => AnonymousClassCreationExp(ClassDecl(None, None, t._2._1, t._2._2, t._2._3), t._1))
-      | ((qualifiedName.map(Left(_)) | expression.map(Right(_))) ~ ("(" ~/ argumentExpressionList ~ ")").?)
+      | (expression ~ ("(" ~/ argumentExpressionList ~ ")").?)
         .map(t => InstanceCreationExp(t._1, t._2)))
   )
 

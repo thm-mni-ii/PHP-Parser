@@ -61,7 +61,7 @@ object Expressions {
   case class PrintIntrinsic(exp: Expression) extends Intrinsic
   case class ListIntrinsic(expList: Either[Seq[Expression], Seq[(Expression, Expression)]]) extends Intrinsic
 
-  case class InstanceCreationExp(designator: Either[QualifiedName, Expression], arguments: Option[Seq[ArgumentExpression]]) extends Expression
+  case class InstanceCreationExp(designator: Expression, arguments: Option[Seq[ArgumentExpression]]) extends Expression
   case class AnonymousClassCreationExp(decl: ClassDecl, arguments: Option[Seq[ArgumentExpression]]) extends Expression
 
   case class PostfixIncrementExp(va: Variable) extends Expression
