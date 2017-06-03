@@ -118,5 +118,5 @@ object Statements {
   case object StringType extends ScalarTypeDecl
   case class QualifiedType(name: QualifiedName) extends TypeDecl()
 
-  case class NamespaceDef(name: Option[Name], stmnt: Option[CompoundStmnt], override val text: Option[Text]) extends Definition with EndTagElement
+  case class NamespaceDef(name: Option[QualifiedName], stmnt: Option[CompoundStmnt], override val text: Option[Text]) extends Definition with EndTagElement
 }

@@ -129,6 +129,6 @@ object DeclarationParser {
   private val traitMemberDecl: P[MemberDecl] = P(propertyDecl | methodDecl | traitUseClause)
 
   val traitDeclStmnt: P[TraitDecl] =
-    P(TRAIT ~~ &(ws) ~/ name ~ "(" ~/ interfaceMemberDecl.rep ~ ")")
+    P(TRAIT ~~ &(ws) ~/ name ~ "{" ~/ traitMemberDecl.rep ~ "}")
       .map(t => TraitDecl(t._1, t._2))
 }

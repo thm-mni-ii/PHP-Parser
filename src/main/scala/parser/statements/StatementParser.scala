@@ -85,8 +85,9 @@ object StatementParser {
     .map(t => FuncDef(t._1, t._2))
 
 
-  val namespaceDefStmnt : P[NamespaceDef] = P((NAMESPACE ~~ &(ws) ~/ name ~ semicolonFactory).map(t => NamespaceDef(Some(t._1), None, t._2)) |
-    (NAMESPACE ~~ &(ws) ~/ name.? ~ compoundStmnt).map(t => NamespaceDef(t._1, Some(t._2), None)))
+  val namespaceDefStmnt : P[NamespaceDef] = P(
+    (NAMESPACE ~~ &(ws) ~ qualifiedName ~ semicolonFactory).map(t => NamespaceDef(Some(t._1), None, t._2)) |
+    (NAMESPACE ~~ &(ws) ~/ qualifiedName.? ~ compoundStmnt).map(t => NamespaceDef(t._1, Some(t._2), None)))
 
 
   private val possibleStatements : P[Statement] = P(compoundStmnt | namedLabelStmnt | selectionStmnt | iterationStmnt | jumpStmnt | tryStmnt |

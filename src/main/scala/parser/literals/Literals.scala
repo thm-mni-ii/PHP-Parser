@@ -42,7 +42,7 @@ object Literals {
   val floatingLiteral : P[FloatingLiteral] = P(("." ~ digit.rep(1) ~ exponentPart.?).map(t => FloatingLiteral("", t._1.mkString, t._2)) |
     (digit.rep(1) ~ (exponentPart.map(e => (Some(e), "")) | ("." ~ digit.rep ~ exponentPart.?).map(t => (t._2, t._1.mkString)))).map(t => FloatingLiteral(t._1.mkString, t._2._2, t._2._1)))
 
-  val assignmentOp = P(StringIn("**", "*", "/", "+", "-", ".", "<<", ">>", "&", "^", "|").!)
+  val assignmentOp = P(StringIn("**", "*", "/", "+", "-", ".", "<<", ">>", "&", "^", "|", "%").!)
   val equalityOp = P(StringIn("===", "==", "!==", "!=", "<>").!)
   val relationalOp = P(StringIn("<=>", "<=", ">=", "<", ">").!)
   val unaryOp = P(CharIn("+-!~").!)

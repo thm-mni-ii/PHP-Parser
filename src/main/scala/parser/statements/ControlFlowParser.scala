@@ -28,7 +28,7 @@ object ControlFlowParser {
       (ELSE ~ ":" ~/ statements).? ~ ENDIF ~/ semicolonFactory) |
     (statement ~/
       (ELSEIF ~/ "(" ~ expression ~ ")" ~/ statement).rep ~
-      (ELSE ~~ &(wsExp | semicolon) ~/ statement).?)
+      (ELSE ~~ &(wsExp | semicolon | "{") ~/ statement).?)
       .map(t => (Seq(t._1), t._2.map(e => (e._1, Seq(e._2))), t._3.map(Seq(_)), None))
   )
 
