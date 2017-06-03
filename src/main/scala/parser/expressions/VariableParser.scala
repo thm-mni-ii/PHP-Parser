@@ -27,8 +27,8 @@ object VariableParser {
       | ("$" ~ "{" ~/ expression ~ "}").map(SimpleExpVar)
       | variableName)
 
-  val scopeAccVar : P[ScopeAccessVar] = P(
-    selfScope | parentScope | staticScope).map(ScopeAccessVar)
+  val scopeAccVar : P[ScopeAccessVar] = P((
+    selfScope | parentScope | staticScope) ~~ !nonDigit).map(ScopeAccessVar)
 
   val qualifiedNameVar : P[QualifiedNameVar] = P(
     qualifiedName).map(QualifiedNameVar)
