@@ -11,7 +11,7 @@ import parser.literals.Literals._
 
 import parser.Basic.wsExp
 import parser.statements.StatementParser.{compoundStmnt, anonymousFuncHeader}
-import parser.expressions.OperatorParser.logicalOrExpr2
+import parser.expressions.OperatorParser.{logicalOrExpr2, condExp}
 import parser.expressions.VariableParser.{arrayElement, variable}
 
 
@@ -58,6 +58,13 @@ object ExpressionParser {
     .map(t => AnonymousFunctionCreationExp(t._1, t._2._1, t._2._2, t._3))
 
   val singleExpression : P[Expression] = P(yieldExp | requireOnceExp | requireExp | includeOnceExp | includeExp)
+
+  val argumentExpressionList : P[Seq[ArgumentExpression]] = {
+    val argumentExp: P[ArgumentExpression] = P(
+      "...".!.? ~ condExp).map(t => ArgumentExpression(t._1.isDefined, t._2))
+
+    P(argumentExp.rep(sep=","))
+  }
 
   //unused part
 
