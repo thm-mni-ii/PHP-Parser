@@ -1,7 +1,6 @@
 package parser.literals
 
-import ast.Expressions._
-import ast.Statements._
+import ast.{Expressions => EAst, Statements => SAst}
 import fastparse.all._
 import parser.literals.Keywords._
 
@@ -11,50 +10,50 @@ import parser.literals.Keywords._
 object KeywordConversions {
 
   // NamespaceUseTypes
-  val functionUseType = P(FUNCTION).map(_ => NamespaceUseType.FUNCTION)
-  val constUseType = P(CONST).map(_ => NamespaceUseType.CONST)
+  val FunctionUseType = P(FUNCTION).map(_ => SAst.NamespaceUseType.FUNCTION)
+  val ConstUseType = P(CONST).map(_ => SAst.NamespaceUseType.CONST)
 
   // Modifier
-  val abstractMod = P(ABSTRACT).map(_ => AbstractMod)
-  val finalMod = P(FINAL).map(_ => FinalMod)
-  val publicMod = P(PUBLIC).map(_ => PublicMod)
-  val privateMod = P(PRIVATE).map(_ => PrivateMod)
-  val protectedMod = P(PROTECTED).map(_ => ProtectedMod)
-  val staticMod = P(STATIC).map(_ => StaticMod)
-  val noMod = P(VAR).map(_ => NoMod)
+  val AbstractMod = P(ABSTRACT).map(_ => SAst.AbstractMod)
+  val FinalMod = P(FINAL).map(_ => SAst.FinalMod)
+  val PublicMod = P(PUBLIC).map(_ => SAst.PublicMod)
+  val PrivateMod = P(PRIVATE).map(_ => SAst.PrivateMod)
+  val ProtectedMod = P(PROTECTED).map(_ => SAst.ProtectedMod)
+  val StaticMod = P(STATIC).map(_ => SAst.StaticMod)
+  val NoMod = P(VAR).map(_ => SAst.NoMod)
 
   // CastTypes
-  val arrayCastType = P(ARRAY).map(_ => CastType.ARRAY)
-  val binaryCastType = P(BINARY).map(_ => CastType.BINARY)
-  val booleanCastType = P(BOOLEAN).map(_ => CastType.BOOLEAN)
-  val boolCastType = P(BOOL).map(_ => CastType.BOOL)
-  val doubleCastType = P(DOUBLE).map(_ => CastType.DOUBLE)
-  val integerCastType = P(INTEGER).map(_ => CastType.INTEGER)
-  val intCastType = P(INT).map(_ => CastType.INT)
-  val floatCastType = P(FLOAT).map(_ => CastType.FLOAT)
-  val objectCastType = P(OBJECT).map(_ => CastType.OBJECT)
-  val realCastType = P(REAL).map(_ => CastType.REAL)
-  val stringCastType = P(STRING).map(_ => CastType.STRING)
-  val unsetCastType = P(UNSET).map(_ => CastType.UNSET)
+  val ArrayCastType = P(ARRAY).map(_ => EAst.CastType.ARRAY)
+  val BinaryCastType = P(BINARY).map(_ => EAst.CastType.BINARY)
+  val BooleanCastType = P(BOOLEAN).map(_ => EAst.CastType.BOOLEAN)
+  val BoolCastType = P(BOOL).map(_ => EAst.CastType.BOOL)
+  val DoubleCastType = P(DOUBLE).map(_ => EAst.CastType.DOUBLE)
+  val IntegerCastType = P(INTEGER).map(_ => EAst.CastType.INTEGER)
+  val IntCastType = P(INT).map(_ => EAst.CastType.INT)
+  val FloatCastType = P(FLOAT).map(_ => EAst.CastType.FLOAT)
+  val ObjectCastType = P(OBJECT).map(_ => EAst.CastType.OBJECT)
+  val RealCastType = P(REAL).map(_ => EAst.CastType.REAL)
+  val StringCastType = P(STRING).map(_ => EAst.CastType.STRING)
+  val UnsetCastType = P(UNSET).map(_ => EAst.CastType.UNSET)
 
   // DeclareDeclarative
-  val ticksDeclarative = P(TICKS).map(_ => DeclareDeclarative.TICKS )
-  val encodingDeclarative = P(ENCODING).map(_ => DeclareDeclarative.ENCODING)
-  val strictTypesDeclarative = P(STRICT_TYPES).map(_ => DeclareDeclarative.STRICT_TYPES)
+  val TicksDeclarative = P(TICKS).map(_ => SAst.DeclareDeclarative.TICKS )
+  val EncodingDeclarative = P(ENCODING).map(_ => SAst.DeclareDeclarative.ENCODING)
+  val StrictTypesDeclarative = P(STRICT_TYPES).map(_ => SAst.DeclareDeclarative.STRICT_TYPES)
 
   // TypeDecl
-  val arrayType = P(ARRAY).map(_ => ArrayType)
-  val callableType = P(CALLABLE).map(_ => CallableType)
-  val iterableType = P(ITERABLE).map(_ => IterableType)
-  val boolType = P(BOOL).map(_ => BoolType)
-  val floatType = P(FLOAT).map(_ => FloatType)
-  val intType = P(INT).map(_ => IntType)
-  val stringType = P(STRING).map(_ => StringType)
-  val voidType = P(VOID).map(_ => VoidType)
+  val ArrayType = P(ARRAY).map(_ => SAst.ArrayType)
+  val CallableType = P(CALLABLE).map(_ => SAst.CallableType)
+  val IterableType = P(ITERABLE).map(_ => SAst.IterableType)
+  val BoolType = P(BOOL).map(_ => SAst.BoolType)
+  val FloatType = P(FLOAT).map(_ => SAst.FloatType)
+  val IntType = P(INT).map(_ => SAst.IntType)
+  val StringType = P(STRING).map(_ => SAst.StringType)
+  val VoidType = P(VOID).map(_ => SAst.VoidType)
 
   // ScopeTypes
-  val selfScope = P(SELF).map(_ => ScopeType.SELF)
-  val parentScope = P(PARENT).map(_ => ScopeType.PARENT)
-  val staticScope = P(STATIC).map(_ => ScopeType.STATIC)
+  val SelfScope = P(SELF).map(_ => EAst.ScopeType.SELF)
+  val ParentScope = P(PARENT).map(_ => EAst.ScopeType.PARENT)
+  val StaticScope = P(STATIC).map(_ => EAst.ScopeType.STATIC)
 
 }

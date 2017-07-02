@@ -8,7 +8,7 @@ import fastparse.all.{IgnoreCase => I}
   */
 object Keywords {
 
-  val allKeywords = Seq(
+  val AllKeywords = Seq(
     "abstract", "and", "array", "as", "break", "callable", "case", "catch",
     "class", "clone", "const", "continue", "declare", "default", "die", "do", "echo", "else",
     "elseif", "empty", "enddeclare", "endfor", "endforeach", "endif", "endswitch", "endwhile",

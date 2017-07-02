@@ -2,19 +2,18 @@ package parser.statements
 
 import fastparse.noApi._
 import parser.literals.WsAPI._
-import parser.literals.Lexical.ws
+import parser.literals.Lexical.Ws
 
-import ast.Basic.{QualifiedName, Text}
-import ast.Statements._
+import ast.{Basic => BAst, Statements => SAst}
 
 import parser.literals.KeywordConversions._
 import parser.literals.Keywords._
-import parser.literals.Literals.{name, variableName}
+import parser.literals.Literals.{Name, VariableName}
 
-import parser.Basic.{qualifiedName, semicolonFactory, namespaceName}
-import parser.expressions.ExpressionParser.{expression}
-import parser.expressions.VariableParser.simpleVariable
-import parser.statements.StatementParser.{compoundStmnt, funcHeader}
+import parser.Basic.{QualifiedName, SemicolonFactory, NamespaceName}
+import parser.expressions.ExpressionParser.{Expression}
+import parser.expressions.VariableParser.SimpleVariable
+import parser.statements.StatementParser.{CompoundStmnt, FuncHeader}
 
 
 /**
@@ -24,120 +23,120 @@ object DeclarationParser {
 
   // declaration statements
 
-  private val constElem: P[ConstElement] = P(name ~ "=" ~ expression)
-    .map(t => ConstElement(t._1, t._2))
+  private val ConstElem: P[SAst.ConstElement] = P(Name ~ "=" ~ Expression)
+    .map(t => SAst.ConstElement(t._1, t._2))
 
-  val constDeclStmnt: P[ConstDecl] = {
-    P(CONST ~~ &(ws) ~/ constElem.rep ~ semicolonFactory)
-      .map(t => ConstDecl(t._1, t._2))
+  val ConstDeclStmnt: P[SAst.ConstDecl] = {
+    P(CONST ~~ &(Ws) ~/ ConstElem.rep ~ SemicolonFactory)
+      .map(t => SAst.ConstDecl(t._1, t._2))
   }
 
-  val globalDeclStmnt: P[GlobalDecl] = P(GLOBAL ~~ &(ws) ~/ simpleVariable.rep(sep = ",".~/) ~ semicolonFactory)
-    .map(t => GlobalDecl(t._1, t._2))
+  val GlobalDeclStmnt: P[SAst.GlobalDecl] = P(GLOBAL ~~ &(Ws) ~/ SimpleVariable.rep(sep = ",".~/) ~ SemicolonFactory)
+    .map(t => SAst.GlobalDecl(t._1, t._2))
 
 
-  val functionStaticDeclStmnt: P[FuncStaticDecl] = {
-    val staticVarElement: P[StaticVarElement] = P(variableName ~ ("=" ~/ expression).?)
-      .map(t => StaticVarElement(t._1, t._2))
+  val FunctionStaticDeclStmnt: P[SAst.FuncStaticDecl] = {
+    val StaticVarElement: P[SAst.StaticVarElement] = P(VariableName ~ ("=" ~/ Expression).?)
+      .map(t => SAst.StaticVarElement(t._1, t._2))
 
-    P(STATIC ~~ &(ws) ~/ staticVarElement.rep(sep = ",".~/) ~ semicolonFactory)
-      .map(t => FuncStaticDecl(t._1, t._2))
+    P(STATIC ~~ &(Ws) ~/ StaticVarElement.rep(sep = ",".~/) ~ SemicolonFactory)
+      .map(t => SAst.FuncStaticDecl(t._1, t._2))
   }
 
-  val namespaceUseDeclStmnt = {
-    val namespaceUseType: P[NamespaceUseType.Value] = P(functionUseType | constUseType)
+  val NamespaceUseDeclStmnt = {
+    val NamespaceUseType: P[SAst.NamespaceUseType.Value] = P(FunctionUseType | ConstUseType)
 
-    P(USE ~~ &(ws) ~/ (
-      (namespaceUseType ~~ &(ws) ~ "\\".? ~ namespaceName ~ "\\" ~ "{" ~ (namespaceName ~ (AS ~ name).?)
-        .map(t => NamespaceUseClause(None, Right(t._1), t._2)).rep(min = 1, sep = ",") ~ "}")
-        .map(t => NamespaceUseDecl(Some(t._1), Some(t._2), t._3, None)) |
-        ((namespaceUseType ~~ &(ws)).? ~ (qualifiedName ~ (AS ~ name).?)
-          .map(t => NamespaceUseClause(None, Left(t._1), t._2)).rep(min = 1, sep = ",") ~ semicolonFactory)
-          .map(t => NamespaceUseDecl(t._1, None, t._2, t._3)) |
-        ("\\".? ~ namespaceName ~ "\\" ~ "{" ~ (namespaceUseType.? ~ namespaceName ~ (AS ~ name).?)
-          .map(t => NamespaceUseClause(t._1, Right(t._2), t._3)).rep(min = 1, sep = ",") ~ "}")
-          .map(t => NamespaceUseDecl(None, Some(t._1), t._2, None)))
+    P(USE ~~ &(Ws) ~/ (
+      (NamespaceUseType ~~ &(Ws) ~ "\\".? ~ NamespaceName ~ "\\" ~ "{" ~ (NamespaceName ~ (AS ~ Name).?)
+        .map(t => SAst.NamespaceUseClause(None, Right(t._1), t._2)).rep(min = 1, sep = ",") ~ "}")
+        .map(t => SAst.NamespaceUseDecl(Some(t._1), Some(t._2), t._3, None)) |
+        ((NamespaceUseType ~~ &(Ws)).? ~ (QualifiedName ~ (AS ~ Name).?)
+          .map(t => SAst.NamespaceUseClause(None, Left(t._1), t._2)).rep(min = 1, sep = ",") ~ SemicolonFactory)
+          .map(t => SAst.NamespaceUseDecl(t._1, None, t._2, t._3)) |
+        ("\\".? ~ NamespaceName ~ "\\" ~ "{" ~ (NamespaceUseType.? ~ NamespaceName ~ (AS ~ Name).?)
+          .map(t => SAst.NamespaceUseClause(t._1, Right(t._2), t._3)).rep(min = 1, sep = ",") ~ "}")
+          .map(t => SAst.NamespaceUseDecl(None, Some(t._1), t._2, None)))
     )
   }
 
 
   // available modifiers
 
-  private val visibilityMod: P[VisibilityModifier] = P(publicMod | privateMod | protectedMod)
-  private val classMod: P[ClassModifier] = P(abstractMod | finalMod)
-  private val methodMod: P[MethodModifier] = P(visibilityMod | staticMod | classMod)
-  private val propertyMod: P[PropertyModifier] = P(noMod |
-    (visibilityMod ~ staticMod.?).map(t => CombinedMod(t._2, Some(t._1)))
-    | (staticMod ~ visibilityMod.?).map(t => CombinedMod(Some(t._1), t._2)))
+  private val VisibilityMod: P[SAst.VisibilityModifier] = P(PublicMod | PrivateMod | ProtectedMod)
+  private val ClassMod: P[SAst.ClassModifier] = P(AbstractMod | FinalMod)
+  private val MethodMod: P[SAst.MethodModifier] = P(VisibilityMod | StaticMod | ClassMod)
+  private val PropertyMod: P[SAst.PropertyModifier] = P(NoMod |
+    (VisibilityMod ~ StaticMod.?).map(t => SAst.CombinedMod(t._2, Some(t._1)))
+    | (StaticMod ~ VisibilityMod.?).map(t => SAst.CombinedMod(Some(t._1), t._2)))
 
   // member declarations
 
-  val classConstDecl: P[ClassConstDecl] = P((visibilityMod ~~ &(ws)).? ~ CONST ~~ &(ws) ~/ constElem.rep ~ semicolonFactory)
-    .map(t => ClassConstDecl(t._1, t._2, t._3))
+  val ClassConstDecl: P[SAst.ClassConstDecl] = P((VisibilityMod ~~ &(Ws)).? ~ CONST ~~ &(Ws) ~/ ConstElem.rep ~ SemicolonFactory)
+    .map(t => SAst.ClassConstDecl(t._1, t._2, t._3))
 
-  val propertyDecl: P[PropertyDecl] = {
-    val propertyElem: P[PropertyElement] = P(variableName ~ ("=" ~ expression).?)
-      .map(t => PropertyElement(t._1, t._2))
+  val PropertyDecl: P[SAst.PropertyDecl] = {
+    val propertyElem: P[SAst.PropertyElement] = P(VariableName ~ ("=" ~ Expression).?)
+      .map(t => SAst.PropertyElement(t._1, t._2))
 
-    P(propertyMod ~~ &(ws) ~ propertyElem.rep ~ semicolonFactory)
-      .map(t => PropertyDecl(t._1, t._2, t._3))
+    P(PropertyMod ~~ &(Ws) ~ propertyElem.rep ~ SemicolonFactory)
+      .map(t => SAst.PropertyDecl(t._1, t._2, t._3))
   }
 
-  val methodDecl: P[MethodDecl] = {
-    val bodyOrEnd: P[(Option[CompoundStmnt], Option[Text])] =
-      P(semicolonFactory.map((None, _)) | compoundStmnt.map(t => (Some(t), None)))
+  val MethodDecl: P[SAst.MethodDecl] = {
+    val BodyOrEnd: P[(Option[SAst.CompoundStmnt], Option[BAst.Text])] =
+      P(SemicolonFactory.map((None, _)) | CompoundStmnt.map(t => (Some(t), None)))
 
-    P((methodMod ~~ &(ws)).rep ~ funcHeader ~ bodyOrEnd)
-      .map(t => MethodDecl(t._1, t._2, t._3._1, t._3._2))
+    P((MethodMod ~~ &(Ws)).rep ~ FuncHeader ~ BodyOrEnd)
+      .map(t => SAst.MethodDecl(t._1, t._2, t._3._1, t._3._2))
   }
 
-  val traitUseClause: P[TraitUseClause] = {
-    val traitUseSpec: P[TraitUseSpec] =
-      P((name ~~ &(ws) ~ INSTEADOF ~~ &(ws) ~ name).map(t => SelectInsteadofClause(t._1, t._2))
-        | (name ~~ &(ws) ~ AS ~~ &(ws) ~ (visibilityMod ~~ &(ws)).? ~ name).map(t => TraitAliasClause(t._1, t._2, Some(t._3)))
-        | (name ~~ &(ws) ~ AS ~~ &(ws) ~ visibilityMod ~~ &(ws) ~ name.?).map(t => TraitAliasClause(t._1, Some(t._2), t._3)))
+  val TraitUseClause: P[SAst.TraitUseClause] = {
+    val TraitUseSpec: P[SAst.TraitUseSpec] =
+      P((Name ~~ &(Ws) ~ INSTEADOF ~~ &(Ws) ~ Name).map(t => SAst.SelectInsteadofClause(t._1, t._2))
+        | (Name ~~ &(Ws) ~ AS ~~ &(Ws) ~ (VisibilityMod ~~ &(Ws)).? ~ Name).map(t => SAst.TraitAliasClause(t._1, t._2, Some(t._3)))
+        | (Name ~~ &(Ws) ~ AS ~~ &(Ws) ~ VisibilityMod ~~ &(Ws) ~ Name.?).map(t => SAst.TraitAliasClause(t._1, Some(t._2), t._3)))
 
-    val traitUseSpecs: P[(Seq[TraitUseSpec], Option[Text])] = P(semicolonFactory.map((Seq(), _)) |
-      ("{" ~ traitUseSpec.rep(sep = ",") ~ "}").map((_, None)))
+    val TraitUseSpecs: P[(Seq[SAst.TraitUseSpec], Option[BAst.Text])] = P(SemicolonFactory.map((Seq(), _)) |
+      ("{" ~ TraitUseSpec.rep(sep = ",") ~ "}").map((_, None)))
 
-    P(USE ~~ &(ws) ~/ qualifiedName.rep(sep = ",") ~/ traitUseSpecs)
-      .map(t => TraitUseClause(t._1, t._2._1, t._2._2))
+    P(USE ~~ &(Ws) ~/ QualifiedName.rep(sep = ",") ~/ TraitUseSpecs)
+      .map(t => SAst.TraitUseClause(t._1, t._2._1, t._2._2))
   }
 
 
   // class declarations
 
-  private[parser] val classDeclBody: P[(Option[QualifiedName], Option[Seq[QualifiedName]], Seq[MemberDecl])] = {
-    val classMemberDecl: P[MemberDecl] = P(classConstDecl | propertyDecl | methodDecl | traitUseClause)
+  private[parser] val ClassDeclBody: P[(Option[BAst.QualifiedName], Option[Seq[BAst.QualifiedName]], Seq[SAst.MemberDecl])] = {
+    val ClassMemberDecl: P[SAst.MemberDecl] = P(ClassConstDecl | PropertyDecl | MethodDecl | TraitUseClause)
 
-    P((&(ws) ~ EXTENDS ~~ &(ws) ~ qualifiedName).?
-      ~~ (&(ws) ~ IMPLEMENTS ~~ &(ws) ~ qualifiedName.rep(sep = ",".~/)).?
-      ~ "{" ~/ classMemberDecl.rep ~ "}")
+    P((&(Ws) ~ EXTENDS ~~ &(Ws) ~ QualifiedName).?
+      ~~ (&(Ws) ~ IMPLEMENTS ~~ &(Ws) ~ QualifiedName.rep(sep = ",".~/)).?
+      ~ "{" ~/ ClassMemberDecl.rep ~ "}")
   }
 
-  val classDeclStmnt: P[ClassDecl] = P(classMod.? ~ CLASS ~~ &(ws) ~/ name ~~ classDeclBody)
-    .map(t => ClassDecl(t._1, Some(t._2), t._3._1, t._3._2, t._3._3))
+  val ClassDeclStmnt: P[SAst.ClassDecl] = P(ClassMod.? ~ CLASS ~~ &(Ws) ~/ Name ~~ ClassDeclBody)
+    .map(t => SAst.ClassDecl(t._1, Some(t._2), t._3._1, t._3._2, t._3._3))
 
 
   // interface declarations
 
-  val interfaceDeclStmnt: P[InterfaceDecl] = {
-    val interfaceMemberDecl: P[MemberDecl] = P(classConstDecl | methodDecl)
+  val InterfaceDeclStmnt: P[SAst.InterfaceDecl] = {
+    val interfaceMemberDecl: P[SAst.MemberDecl] = P(ClassConstDecl | MethodDecl)
 
-    P(INTERFACE ~~ &(ws) ~/ name ~~ (&(ws)
-      ~ EXTENDS ~~ &(ws) ~ qualifiedName.rep(sep = ",".~/)).?
+    P(INTERFACE ~~ &(Ws) ~/ Name ~~ (&(Ws)
+      ~ EXTENDS ~~ &(Ws) ~ QualifiedName.rep(sep = ",".~/)).?
       ~ "{" ~/ interfaceMemberDecl.rep ~ "}"
-    ).map(t => InterfaceDecl(t._1, t._2, t._3))
+    ).map(t => SAst.InterfaceDecl(t._1, t._2, t._3))
   }
 
 
   // trait declarations
 
-  val traitDeclStmnt: P[TraitDecl] = {
-    val traitMemberDecl: P[MemberDecl] = P(propertyDecl | methodDecl | traitUseClause)
+  val TraitDeclStmnt: P[SAst.TraitDecl] = {
+    val TraitMemberDecl: P[SAst.MemberDecl] = P(PropertyDecl | MethodDecl | TraitUseClause)
 
-    P(TRAIT ~~ &(ws) ~/ name
-      ~ "{" ~/ traitMemberDecl.rep ~ "}"
-    ).map(t => TraitDecl(t._1, t._2))
+    P(TRAIT ~~ &(Ws) ~/ Name
+      ~ "{" ~/ TraitMemberDecl.rep ~ "}"
+    ).map(t => SAst.TraitDecl(t._1, t._2))
   }
 }

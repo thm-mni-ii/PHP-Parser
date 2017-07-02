@@ -3,14 +3,14 @@ package parser.expressions
 import fastparse.noApi._
 import parser.literals.WsAPI._
 
-import ast.Expressions._
+import ast.{Expressions => EAst}
 
 import parser.literals.Keywords._
 import parser.literals.KeywordConversions._
 import parser.literals.Literals._
 
 import parser.Basic._
-import parser.expressions.ExpressionParser.{expression, argumentExpressionList}
+import parser.expressions.ExpressionParser.{Expression, ArgumentExpressionList}
 
 
 /**
@@ -18,50 +18,50 @@ import parser.expressions.ExpressionParser.{expression, argumentExpressionList}
   */
 object VariableParser {
 
-  val variableName: P[SimpleNameVar] = P(
-    "$" ~ nameWithKeyword).map(SimpleNameVar)
+  val VariableName: P[EAst.SimpleNameVar] = P(
+    "$" ~ NameWithKeyword).map(EAst.SimpleNameVar)
 
-  val simpleVariable: P[SimpleVar] = P(
-    ("$" ~ simpleVariable).map(SimpleAccessVar)
-      | ("$" ~ "{" ~/ expression ~ "}").map(SimpleExpVar)
-      | variableName)
+  val SimpleVariable: P[EAst.SimpleVar] = P(
+    ("$" ~ SimpleVariable).map(EAst.SimpleAccessVar)
+      | ("$" ~ "{" ~/ Expression ~ "}").map(EAst.SimpleExpVar)
+      | VariableName)
 
-  val arrayElement: P[ArrayElement] = P(
-    ("&" ~ NoCut(expression)).map(ArrayElement(None, _, true))
-      | (expression ~ ("=>" ~ "&".!.? ~ expression).?).map(t =>
-      if (t._2.isDefined) ArrayElement(Some(t._1), t._2.get._2, t._2.get._1.isDefined)
-      else ArrayElement(None, t._1, false))
+  val ArrayElement: P[EAst.ArrayElement] = P(
+    ("&" ~ NoCut(Expression)).map(EAst.ArrayElement(None, _, true))
+      | (Expression ~ ("=>" ~ "&".!.? ~ Expression).?).map(t =>
+      if (t._2.isDefined) EAst.ArrayElement(Some(t._1), t._2.get._2, t._2.get._1.isDefined)
+      else EAst.ArrayElement(None, t._1, false))
   )
 
-  val arrayCreationVar: P[ArrayCreationVar] = P(
-    ARRAY ~ "(" ~/ !"," ~ arrayElement.rep(sep = ("," ~ !")").~/) ~ ",".? ~ ")"
-      | "[" ~/ !"," ~ arrayElement.rep(sep = ("," ~ !"]").~/) ~ ",".? ~ "]"
-  ).map(ArrayCreationVar)
+  val ArrayCreationVar: P[EAst.ArrayCreationVar] = P(
+    ARRAY ~ "(" ~/ !"," ~ ArrayElement.rep(sep = ("," ~ !")").~/) ~ ",".? ~ ")"
+      | "[" ~/ !"," ~ ArrayElement.rep(sep = ("," ~ !"]").~/) ~ ",".? ~ "]"
+  ).map(EAst.ArrayCreationVar)
 
-  val stringLiteralVar: P[Variable] = P(stringLiteral).map(StringLiteralVar)
-  val enclosedExp: P[EnclosedExp] = P("(" ~/ expression ~ ")").map(EnclosedExp)
-  val scopeAccVar: P[ScopeAccessVar] = P((selfScope | parentScope | staticScope) ~~ !nonDigit).map(ScopeAccessVar)
-  val qualifiedNameVar: P[QualifiedNameVar] = P(qualifiedName).map(QualifiedNameVar)
+  val StringLiteralVar: P[EAst.Variable] = P(StringLiteral).map(EAst.StringLiteralVar)
+  val EnclosedExp: P[EAst.EnclosedExp] = P("(" ~/ Expression ~ ")").map(EAst.EnclosedExp)
+  val ScopeAccVar: P[EAst.ScopeAccessVar] = P((SelfScope | ParentScope | StaticScope) ~~ !NonDigit).map(EAst.ScopeAccessVar)
+  val QualifiedNameVar: P[EAst.QualifiedNameVar] = P(QualifiedName).map(EAst.QualifiedNameVar)
 
-  val variable: P[Variable] = {
-    val singleVariable: P[Variable] = P(
-      simpleVariable | arrayCreationVar | stringLiteralVar
-        | scopeAccVar | qualifiedNameVar | enclosedExp)
+  val Variable: P[EAst.Variable] = {
+    val SingleVariable: P[EAst.Variable] = P(
+      SimpleVariable | ArrayCreationVar | StringLiteralVar
+        | ScopeAccVar | QualifiedNameVar | EnclosedExp)
 
-    val memberName: P[MemberName] = P(
-      nameWithKeyword.map(NameMember)
-        | simpleVariable.map(SimpleVarMember)
-        | ("{" ~/ expression ~ "}").map(ExpMember))
+    val MemberName: P[EAst.MemberName] = P(
+      NameWithKeyword.map(EAst.NameMember)
+        | SimpleVariable.map(EAst.SimpleVarMember)
+        | ("{" ~/ Expression ~ "}").map(EAst.ExpMember))
 
-    P(singleVariable ~ (
-      ("::" ~ memberName ~ "(" ~/ argumentExpressionList ~ ")").map(t => (x: Variable) => MemberCallStaticAcc(x, t._1, t._2))
-        | ("::" ~ simpleVariable).map(t => (x: Variable) => SimpleVarStaticAcc(x, t))
-        | ("(" ~/ argumentExpressionList ~ ")").map(t => (x: Variable) => CallAccessor(x, t))
-        | ("[" ~/ expression.? ~ "]").map(t => (x: Variable) => ArrayAcc(x, t))
-        | ("{" ~/ expression ~ "}").map(t => (x: Variable) => BlockAcc(x, t))
-        | ("->" ~/ memberName ~ ("(" ~/ argumentExpressionList ~ ")").?).map(t =>
-        if (t._2.isDefined) (x: Variable) => MemberCallPropertyAcc(x, t._1, t._2.get)
-        else (x: Variable) => MemberPropertyAcc(x, t._1))
+    P(SingleVariable ~ (
+      ("::" ~ MemberName ~ "(" ~/ ArgumentExpressionList ~ ")").map(t => (x: EAst.Variable) => EAst.MemberCallStaticAcc(x, t._1, t._2))
+        | ("::" ~ SimpleVariable).map(t => (x: EAst.Variable) => EAst.SimpleVarStaticAcc(x, t))
+        | ("(" ~/ ArgumentExpressionList ~ ")").map(t => (x: EAst.Variable) => EAst.CallAccessor(x, t))
+        | ("[" ~/ Expression.? ~ "]").map(t => (x: EAst.Variable) => EAst.ArrayAcc(x, t))
+        | ("{" ~/ Expression ~ "}").map(t => (x: EAst.Variable) => EAst.BlockAcc(x, t))
+        | ("->" ~/ MemberName ~ ("(" ~/ ArgumentExpressionList ~ ")").?).map(t =>
+        if (t._2.isDefined) (x: EAst.Variable) => EAst.MemberCallPropertyAcc(x, t._1, t._2.get)
+        else (x: EAst.Variable) => EAst.MemberPropertyAcc(x, t._1))
       ).rep
     ).map(t => t._2.foldLeft(t._1)((a, b) => b(a)))
   }

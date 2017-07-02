@@ -2,19 +2,17 @@ package parser.statements
 
 import fastparse.noApi._
 import parser.literals.WsAPI._
-import parser.literals.Lexical.ws
+import parser.literals.Lexical.Ws
 
-import ast.Basic.Text
-import ast.Expressions.SimpleNameVar
-import ast.Statements._
+import ast.{Basic => BAst, Expressions => EAst, Statements => SAst}
 
 import parser.literals.KeywordConversions._
 import parser.literals.Keywords._
 import parser.literals.Literals._
 
 import parser.PHPParser.isTagProcessed
-import parser.Basic.{echoStartTag, qualifiedName, semicolonFactory}
-import parser.expressions.ExpressionParser.expression
+import parser.Basic.{EchoStartTag, QualifiedName, SemicolonFactory}
+import parser.expressions.ExpressionParser.Expression
 import parser.statements.ControlFlowParser._
 import parser.statements.DeclarationParser._
 
@@ -23,71 +21,71 @@ import parser.statements.DeclarationParser._
   */
 object StatementParser {
 
-  def statement: P[Statement] = if (isTagProcessed) possibleStatements else echoTagStmnt
+  def Statement: P[SAst.Statement] = if (isTagProcessed) PossibleStatements else EchoTagStmnt
 
-  val statements: P[Seq[Statement]] = P(statement.rep)
+  val Statements: P[Seq[SAst.Statement]] = P(Statement.rep)
 
-  def echoTagStmnt: P[EchoTagStmnt] = {
+  def EchoTagStmnt: P[SAst.EchoTagStmnt] = {
     isTagProcessed = true
-    P(echoStartTag ~ expression.rep(min = 1, sep = ",") ~ semicolonFactory).map(t => EchoTagStmnt(t._2, t._3))
+    P(EchoStartTag ~ Expression.rep(min = 1, sep = ",") ~ SemicolonFactory).map(t => SAst.EchoTagStmnt(t._2, t._3))
   }
 
-  val emptyStmnt: P[EmptyStmnt] = P(semicolonFactory).map(EmptyStmnt)
-  val compoundStmnt: P[CompoundStmnt] = P("{" ~/ statements ~ "}").map(CompoundStmnt)
-  val namedLabelStmnt: P[NamedLabelStmnt] = P(name ~ ":" ~ statement).map(t => NamedLabelStmnt(t._1, t._2))
-  val expStmnt: P[ExpressionStmnt] = P(expression ~ semicolonFactory).map(t => ExpressionStmnt(t._1, t._2))
+  val EmptyStmnt: P[SAst.EmptyStmnt] = P(SemicolonFactory).map(SAst.EmptyStmnt)
+  val CompoundStmnt: P[SAst.CompoundStmnt] = P("{" ~/ Statements ~ "}").map(SAst.CompoundStmnt)
+  val NamedLabelStmnt: P[SAst.NamedLabelStmnt] = P(Name ~ ":" ~ Statement).map(t => SAst.NamedLabelStmnt(t._1, t._2))
+  val ExpStmnt: P[SAst.ExpressionStmnt] = P(Expression ~ SemicolonFactory).map(t => SAst.ExpressionStmnt(t._1, t._2))
 
-  val tryStmnt: P[TryStmnt] = {
-    val catchClause: P[CatchClause] = P(CATCH ~ "(" ~/ qualifiedName ~ variableName ~ ")" ~/ compoundStmnt)
-      .map(t => CatchClause(t._1, t._2, t._3))
+  val TryStmnt: P[SAst.TryStmnt] = {
+    val CatchClause: P[SAst.CatchClause] = P(CATCH ~ "(" ~/ QualifiedName ~ VariableName ~ ")" ~/ CompoundStmnt)
+      .map(t => SAst.CatchClause(t._1, t._2, t._3))
 
-    P(TRY ~ &("{") ~/ compoundStmnt ~/ catchClause.rep() ~ (FINALLY ~ &("{") ~/ compoundStmnt).?)
-      .map(t => TryStmnt(t._1, t._2, t._3))
+    P(TRY ~ &("{") ~/ CompoundStmnt ~/ CatchClause.rep() ~ (FINALLY ~ &("{") ~/ CompoundStmnt).?)
+      .map(t => SAst.TryStmnt(t._1, t._2, t._3))
   }
 
-  val declareStmnt: P[DeclareStmnt] = {
-    val declareDeclarative: P[DeclareDeclarative.Value] =
-      P(ticksDeclarative | encodingDeclarative | strictTypesDeclarative)
+  val DeclareStmnt: P[SAst.DeclareStmnt] = {
+    val DeclareDeclarative: P[SAst.DeclareDeclarative.Value] =
+      P(TicksDeclarative | EncodingDeclarative | StrictTypesDeclarative)
 
-    val declareBody: P[(Seq[Statement], Option[Text])] =
-      P(":" ~/ statements ~ ENDDECLARE ~ semicolonFactory |
-        statement.map(t => (Seq(t), None)))
+    val DeclareBody: P[(Seq[SAst.Statement], Option[BAst.Text])] =
+      P(":" ~/ Statements ~ ENDDECLARE ~ SemicolonFactory |
+        Statement.map(t => (Seq(t), None)))
 
-    P(DECLARE ~ "(" ~/ declareDeclarative ~ "=" ~ literal ~ ")" ~/ declareBody)
-      .map(t => DeclareStmnt(t._1, t._2, t._3._1, t._3._2))
+    P(DECLARE ~ "(" ~/ DeclareDeclarative ~ "=" ~ Literal ~ ")" ~/ DeclareBody)
+      .map(t => SAst.DeclareStmnt(t._1, t._2, t._3._1, t._3._2))
   }
 
 
-  val typeDecl: P[TypeDecl] = P(arrayType | callableType | iterableType |
-    boolType | floatType | intType | stringType | qualifiedName.map(QualifiedType))
-  val possibleFunctionType: P[PossibleTypes] = P(voidType | typeDecl)
+  val TypeDecl: P[SAst.TypeDecl] = P(ArrayType | CallableType | IterableType |
+    BoolType | FloatType | IntType | StringType | QualifiedName.map(SAst.QualifiedType))
+  val PossibleFunctionType: P[SAst.PossibleTypes] = P(VoidType | TypeDecl)
 
-  private val paramType: P[(Option[TypeDecl], Boolean)] = P(typeDecl.? ~ "&".!.?)
+  private val ParamType: P[(Option[SAst.TypeDecl], Boolean)] = P(TypeDecl.? ~ "&".!.?)
     .map(t => (t._1, t._2.isDefined))
-  private val parameterDecl: P[(Option[TypeDecl], Boolean) => ParameterDecl] =
-    P(("..." ~ variableName).map(name => (a: Option[TypeDecl], b: Boolean) => VariadicParam(a, b, name))
-      | (variableName ~ ("=" ~ expression).?).map(t => (a: Option[TypeDecl], b: Boolean) => SimpleParam(a, b, t._1, t._2)))
+  private val ParameterDecl: P[(Option[SAst.TypeDecl], Boolean) => SAst.ParameterDecl] =
+    P(("..." ~ VariableName).map(name => (a: Option[SAst.TypeDecl], b: Boolean) => SAst.VariadicParam(a, b, name))
+      | (VariableName ~ ("=" ~ Expression).?).map(t => (a: Option[SAst.TypeDecl], b: Boolean) => SAst.SimpleParam(a, b, t._1, t._2)))
 
-  private[statements] val funcHeader: P[FuncHeader] =
-    P(FUNCTION ~~ &(ws) ~ "&".!.? ~ name ~/ "(" ~/ (paramType ~ parameterDecl).rep(sep = ",".~/) ~ ")" ~/ (":" ~/ possibleFunctionType).?)
-      .map(t => FuncHeader(t._1.isDefined, Some(t._2), t._3.map(g => g._3(g._1, g._2)), t._4))
+  private[statements] val FuncHeader: P[SAst.FuncHeader] =
+    P(FUNCTION ~~ &(Ws) ~ "&".!.? ~ Name ~/ "(" ~/ (ParamType ~ ParameterDecl).rep(sep = ",".~/) ~ ")" ~/ (":" ~/ PossibleFunctionType).?)
+      .map(t => SAst.FuncHeader(t._1.isDefined, Some(t._2), t._3.map(g => g._3(g._1, g._2)), t._4))
 
-  private[parser] val anonymousFuncHeader: P[(FuncHeader, Seq[(Boolean, SimpleNameVar)])] = P(
-    FUNCTION ~~ &(ws | "(") ~ "&".!.?
-      ~ "(" ~/ (paramType ~ parameterDecl).rep(sep = ",".~/) ~ ")"
-      ~/ (USE ~ "(" ~ ("&".!.?.map(_.isDefined) ~ variableName).rep(1, sep = ",") ~ ")").?
-      ~ (":" ~/ possibleFunctionType).?)
-    .map(t => (FuncHeader(t._1.isDefined, None, t._2.map(g => g._3(g._1, g._2)), t._4), t._3.getOrElse(Seq())))
+  private[parser] val AnonymousFuncHeader: P[(SAst.FuncHeader, Seq[(Boolean, EAst.SimpleNameVar)])] = P(
+    FUNCTION ~~ &(Ws | "(") ~ "&".!.?
+      ~ "(" ~/ (ParamType ~ ParameterDecl).rep(sep = ",".~/) ~ ")"
+      ~/ (USE ~ "(" ~ ("&".!.?.map(_.isDefined) ~ VariableName).rep(1, sep = ",") ~ ")").?
+      ~ (":" ~/ PossibleFunctionType).?)
+    .map(t => (SAst.FuncHeader(t._1.isDefined, None, t._2.map(g => g._3(g._1, g._2)), t._4), t._3.getOrElse(Seq())))
 
-  val functionDefStmnt: P[FuncDef] = P(funcHeader ~ &("{") ~/ compoundStmnt)
-    .map(t => FuncDef(t._1, t._2))
+  val FunctionDefStmnt: P[SAst.FuncDef] = P(FuncHeader ~ &("{") ~/ CompoundStmnt)
+    .map(t => SAst.FuncDef(t._1, t._2))
 
-  val namespaceDefStmnt: P[NamespaceDef] = P(
-    (NAMESPACE ~~ &(ws) ~ qualifiedName ~ semicolonFactory).map(t => NamespaceDef(Some(t._1), None, t._2))
-      | (NAMESPACE ~~ &(ws) ~/ qualifiedName.? ~ compoundStmnt).map(t => NamespaceDef(t._1, Some(t._2), None)))
+  val NamespaceDefStmnt: P[SAst.NamespaceDef] = P(
+    (NAMESPACE ~~ &(Ws) ~ QualifiedName ~ SemicolonFactory).map(t => SAst.NamespaceDef(Some(t._1), None, t._2))
+      | (NAMESPACE ~~ &(Ws) ~/ QualifiedName.? ~ CompoundStmnt).map(t => SAst.NamespaceDef(t._1, Some(t._2), None)))
 
 
-  private val possibleStatements: P[Statement] = P(compoundStmnt | namedLabelStmnt | selectionStmnt | iterationStmnt | jumpStmnt | tryStmnt
-    | declareStmnt | constDeclStmnt | functionDefStmnt | classDeclStmnt | interfaceDeclStmnt | traitDeclStmnt
-    | namespaceDefStmnt | namespaceUseDeclStmnt | globalDeclStmnt | functionStaticDeclStmnt | emptyStmnt | expStmnt)
+  private val PossibleStatements: P[SAst.Statement] = P(CompoundStmnt | NamedLabelStmnt | SelectionStmnt | IterationStmnt | JumpStmnt | TryStmnt
+    | DeclareStmnt | ConstDeclStmnt | FunctionDefStmnt | ClassDeclStmnt | InterfaceDeclStmnt | TraitDeclStmnt
+    | NamespaceDefStmnt | NamespaceUseDeclStmnt | GlobalDeclStmnt | FunctionStaticDeclStmnt | EmptyStmnt | ExpStmnt)
 }

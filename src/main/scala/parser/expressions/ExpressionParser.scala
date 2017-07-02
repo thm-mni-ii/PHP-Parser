@@ -2,83 +2,83 @@ package parser.expressions
 
 import fastparse.noApi._
 import parser.literals.WsAPI._
-import parser.literals.Lexical.ws
+import parser.literals.Lexical.Ws
 
-import ast.Expressions._
+import ast.{Expressions => EAst}
 
 import parser.literals.Keywords._
 import parser.literals.Literals._
 
-import parser.Basic.wsExp
-import parser.statements.StatementParser.{compoundStmnt, anonymousFuncHeader}
-import parser.expressions.OperatorParser.{logicalOrExpr2, condExp}
-import parser.expressions.VariableParser.{arrayElement, variable}
+import parser.Basic.WsExp
+import parser.statements.StatementParser.{CompoundStmnt, AnonymousFuncHeader}
+import parser.expressions.OperatorParser.{LogicalOrExpr2, CondExp}
+import parser.expressions.VariableParser.{ArrayElement, Variable}
 
 
 object ExpressionParser {
 
-  val expression : P[Expression] = P(yieldExp | requireOnceExp | requireExp | includeOnceExp | includeExp | logicalOrExpr2)
+  val Expression : P[EAst.Expression] = P(YieldExp | RequireOnceExp | RequireExp | IncludeOnceExp | IncludeExp | LogicalOrExpr2)
 
-  val requireExp : P[RequireExp] = P(REQUIRE ~~ &(wsExp) ~/ expression).map(RequireExp)
-  val requireOnceExp : P[RequireOnceExp] = P(REQUIRE_ONCE ~~ &(wsExp) ~/ expression).map(RequireOnceExp)
-  val includeExp : P[IncludeExp] = P(INCLUDE ~~ &(wsExp) ~/ expression).map(IncludeExp)
-  val includeOnceExp : P[IncludeOnceExp] = P(INCLUDE_ONCE ~~ &(wsExp) ~/ expression).map(IncludeOnceExp)
-  val yieldExp : P[Expression] = P(
-    (YIELD ~~ ws ~ FROM ~~ &(wsExp) ~/ expression).map(YieldFromExp)
-      | (YIELD ~~ &(wsExp) ~/ arrayElement).map(YieldExp))
+  val RequireExp : P[EAst.RequireExp] = P(REQUIRE ~~ &(WsExp) ~/ Expression).map(EAst.RequireExp)
+  val RequireOnceExp : P[EAst.RequireOnceExp] = P(REQUIRE_ONCE ~~ &(WsExp) ~/ Expression).map(EAst.RequireOnceExp)
+  val IncludeExp : P[EAst.IncludeExp] = P(INCLUDE ~~ &(WsExp) ~/ Expression).map(EAst.IncludeExp)
+  val IncludeOnceExp : P[EAst.IncludeOnceExp] = P(INCLUDE_ONCE ~~ &(WsExp) ~/ Expression).map(EAst.IncludeOnceExp)
+  val YieldExp : P[EAst.Expression] = P(
+    (YIELD ~~ Ws ~ FROM ~~ &(WsExp) ~/ Expression).map(EAst.YieldFromExp)
+      | (YIELD ~~ &(WsExp) ~/ ArrayElement).map(EAst.YieldExp))
 
-  val cloneExp : P[Expression] = P(CLONE ~~ &(wsExp) ~/ expression).map(CloneExp)
+  val CloneExp : P[EAst.Expression] = P(CLONE ~~ &(WsExp) ~/ Expression).map(EAst.CloneExp)
 
-  val primaryExpWithoutVariable : P[Expression] = P(constAccExp |
-    literal | intrinsic | anonymousFuncExp)
+  val PrimaryExpWithoutVariable : P[EAst.Expression] = P(ConstAccExp |
+    Literal | Intrinsic | AnonymousFuncExp)
 
   //unnecessary
-  val constAccExp : P[Expression] = P(Fail)
+  val ConstAccExp : P[EAst.Expression] = P(Fail)
 
-  val listIntrinsic : P[ListIntrinsic] = P(
+  val ListIntrinsic : P[EAst.ListIntrinsic] = P(
     LIST ~ "(" ~/ (
-      (",".rep ~ NoCut(expression).rep(sep=",".rep(1))).map(Left(_))
-        | ((expression ~ "=>" ~ expression).rep(sep=",") ~ ",".?).map(Right(_)))
-      ~ ")").map(ListIntrinsic)
-  val echoIntrinsic : P[EchoIntrinsic] = P(ECHO ~~ &(wsExp) ~/ expression.rep(min=1, sep=",")).map(EchoIntrinsic)
-  val unsetIntrinsic : P[UnsetIntrinsic] = P(UNSET ~ "(" ~ variable.rep(1, sep=",") ~ ")").map(UnsetIntrinsic)
+      (",".rep ~ NoCut(Expression).rep(sep=",".rep(1))).map(Left(_))
+        | ((Expression ~ "=>" ~ Expression).rep(sep=",") ~ ",".?).map(Right(_)))
+      ~ ")").map(EAst.ListIntrinsic)
+  val EchoIntrinsic : P[EAst.EchoIntrinsic] = P(ECHO ~~ &(WsExp) ~/ Expression.rep(min=1, sep=",")).map(EAst.EchoIntrinsic)
+  val UnsetIntrinsic : P[EAst.UnsetIntrinsic] = P(UNSET ~ "(" ~ Variable.rep(1, sep=",") ~ ")").map(EAst.UnsetIntrinsic)
 
-  val emptyIntrinsic : P[EmptyIntrinsic] = P(EMPTY ~ "(" ~/ expression ~ ")").map(EmptyIntrinsic)
-  val evalIntrinsic : P[EvalIntrinsic] = P(EVAL ~ "(" ~/ expression ~ ")").map(EvalIntrinsic)
-  val exitIntrinsic : P[ExitIntrinsic] = P(EXIT ~ ("(" ~/ expression.? ~ ")").? |
-    (DIE ~ ("(" ~/ expression.? ~ ")").?)).map(t => ExitIntrinsic(t.getOrElse(None)))
-  val issetIntrinsic : P[IssetIntrinsic] = P(ISSET ~ "(" ~/ variable.rep(1, sep=",") ~ ")").map(IssetIntrinsic)
-  val printIntrinsic : P[PrintIntrinsic] = P(PRINT ~~ &(wsExp) ~/ expression).map(PrintIntrinsic)
+  val EmptyIntrinsic : P[EAst.EmptyIntrinsic] = P(EMPTY ~ "(" ~/ Expression ~ ")").map(EAst.EmptyIntrinsic)
+  val EvalIntrinsic : P[EAst.EvalIntrinsic] = P(EVAL ~ "(" ~/ Expression ~ ")").map(EAst.EvalIntrinsic)
+  val ExitIntrinsic : P[EAst.ExitIntrinsic] = P(EXIT ~ ("(" ~/ Expression.? ~ ")").? |
+    (DIE ~ ("(" ~/ Expression.? ~ ")").?)).map(t => EAst.ExitIntrinsic(t.getOrElse(None)))
+  val IssetIntrinsic : P[EAst.IssetIntrinsic] = P(ISSET ~ "(" ~/ Variable.rep(1, sep=",") ~ ")").map(EAst.IssetIntrinsic)
+  val PrintIntrinsic : P[EAst.PrintIntrinsic] = P(PRINT ~~ &(WsExp) ~/ Expression).map(EAst.PrintIntrinsic)
 
-  val intrinsicConstruct : P[Expression] = P(echoIntrinsic | unsetIntrinsic | listIntrinsic)
-  val intrinsicOperator : P[Expression] = P(emptyIntrinsic | evalIntrinsic | exitIntrinsic | issetIntrinsic | printIntrinsic)
-  val intrinsic : P[Expression] = P(intrinsicOperator | intrinsicConstruct)
+  val IntrinsicConstruct : P[EAst.Expression] = P(EchoIntrinsic | UnsetIntrinsic | ListIntrinsic)
+  val IntrinsicOperator : P[EAst.Expression] = P(EmptyIntrinsic | EvalIntrinsic | ExitIntrinsic | IssetIntrinsic | PrintIntrinsic)
+  val Intrinsic : P[EAst.Expression] = P(IntrinsicOperator | IntrinsicConstruct)
 
-  val anonymousFuncExp : P[Expression] = P(STATIC.!.?.map(_.isDefined) ~ anonymousFuncHeader ~ compoundStmnt)
-    .map(t => AnonymousFunctionCreationExp(t._1, t._2._1, t._2._2, t._3))
+  val AnonymousFuncExp : P[EAst.Expression] = P(STATIC.!.?.map(_.isDefined) ~ AnonymousFuncHeader ~ CompoundStmnt)
+    .map(t => EAst.AnonymousFunctionCreationExp(t._1, t._2._1, t._2._2, t._3))
 
-  val singleExpression : P[Expression] = P(yieldExp | requireOnceExp | requireExp | includeOnceExp | includeExp)
+  val SingleExpression : P[EAst.Expression] = P(YieldExp | RequireOnceExp | RequireExp | IncludeOnceExp | IncludeExp)
 
-  val argumentExpressionList : P[Seq[ArgumentExpression]] = {
-    val argumentExp: P[ArgumentExpression] = P(
-      "...".!.? ~ condExp).map(t => ArgumentExpression(t._1.isDefined, t._2))
+  val ArgumentExpressionList : P[Seq[EAst.ArgumentExpression]] = {
+    val ArgumentExp: P[EAst.ArgumentExpression] = P(
+      "...".!.? ~ CondExp).map(t => EAst.ArgumentExpression(t._1.isDefined, t._2))
 
-    P(argumentExp.rep(sep=","))
+    P(ArgumentExp.rep(sep=","))
   }
 
   //unused part
 
-  //val expression : P[Expression] = P(exp1).map(_ => SpecialExp())
+  //val Expression : P[Expression] = P(exp1).map(_ => SpecialExp())
 
-  def exp1 : P[Expression] = P((randomOutside.? ~ "(" ~ exp2.? ~ ")" ~ exp1.?).map(_ => SpecialExp()) |
-    (randomOutside.? ~ "{" ~ exp2.? ~ "}" ~  exp1.?) .map(_ => SpecialExp()) |
-    (randomOutside.? ~ "[" ~ exp2.? ~ "]" ~ exp1.?) .map(_ => SpecialExp()) |
-    (randomOutside ~ (":".rep(1) ~ exp1).?) .map(_ => SpecialExp()))
+  def exp1 : P[EAst.Expression] = P((randomOutside.? ~ "(" ~ exp2.? ~ ")" ~ exp1.?).map(_ => EAst.SpecialExp()) |
+    (randomOutside.? ~ "{" ~ exp2.? ~ "}" ~  exp1.?) .map(_ => EAst.SpecialExp()) |
+    (randomOutside.? ~ "[" ~ exp2.? ~ "]" ~ exp1.?) .map(_ => EAst.SpecialExp()) |
+    (randomOutside ~ (":".rep(1) ~ exp1).?) .map(_ => EAst.SpecialExp()))
 
-  def exp2 : P[Expression] = P((random.? ~ "(" ~ exp2.? ~ ")" ~ exp2.?) .map(_ => SpecialExp()) |
-    (random.? ~ "{" ~ exp2.? ~ "}" ~ exp2.?) .map(_ => SpecialExp()) |
-    (random.? ~ "[" ~ exp2.? ~ "]" ~ exp2.?) .map(_ => SpecialExp()) |
-    (random ~ (":".rep(1) ~ exp2).?) .map(_ => SpecialExp()))
+  def exp2 : P[EAst.Expression] = P((random.? ~ "(" ~ exp2.? ~ ")" ~ exp2.?) .map(_ => EAst.SpecialExp()) |
+    (random.? ~ "{" ~ exp2.? ~ "}" ~ exp2.?) .map(_ => EAst.SpecialExp()) |
+    (random.? ~ "[" ~ exp2.? ~ "]" ~ exp2.?) .map(_ => EAst.SpecialExp()) |
+    (random ~ (":".rep(1) ~ exp2).?) .map(_ => EAst.SpecialExp()))
 
   //val random1 : P[Expression] = """[^\(\)\{\}\[\]:]+""".r ^^^ SpecialExp()
 

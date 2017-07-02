@@ -3,20 +3,20 @@ package parser.literals
 object Lexical {
   import fastparse.all._
 
-  val wsChars = P(CharIn("\u0020\u0009"))
-  val newline = P(StringIn("\r\n", "\n", "\r"))
+  val WsChars = P(CharIn("\u0020\u0009"))
+  val Newline = P(StringIn("\r\n", "\n", "\r"))
 
-  val lineCommentText = P(CharsWhile(c => c != '\n' && c != '\r' && c != '?') | !("?>" | newline) ~ AnyChar)
-  val lineComment = P(("//" | "#") ~ lineCommentText.rep)
+  val LineCommentText = P(CharsWhile(c => c != '\n' && c != '\r' && c != '?') | !("?>" | Newline) ~ AnyChar)
+  val LineComment = P(("//" | "#") ~ LineCommentText.rep)
 
-  val multilineText = P(CharsWhile(c => c != '*') | (!"*/" ~ AnyChar))
-  val multiLineComment = P("/*" ~ multilineText.rep ~ ("*/" | End))
+  val MultilineText = P(CharsWhile(c => c != '*') | (!"*/" ~ AnyChar))
+  val MultiLineComment = P("/*" ~ MultilineText.rep ~ ("*/" | End))
 
-  val comment = P(lineComment | multiLineComment)
+  val Comment = P(LineComment | MultiLineComment)
 
-  val whitespace = P(NoTrace((wsChars | newline | comment).rep))
+  val Whitespace = P(NoTrace((WsChars | Newline | Comment).rep))
 
-  val ws = P(&(NoTrace(wsChars | newline | comment).rep(1)))
+  val Ws = P(&(NoTrace(WsChars | Newline | Comment).rep(1)))
 }
 
-object WsAPI extends fastparse.WhitespaceApi.Wrapper(Lexical.whitespace)
+object WsAPI extends fastparse.WhitespaceApi.Wrapper(Lexical.Whitespace)

@@ -2,49 +2,49 @@ package parser
 
 import fastparse.noApi._
 import parser.literals.WsAPI._
-import parser.literals.Lexical.ws
+import parser.literals.Lexical.Ws
 
 import parser.literals.Keywords.{PHP, NAMESPACE}
-import parser.literals.Literals.name
+import parser.literals.Literals.Name
 
-import ast.Basic._
+import ast.{Basic => BAst}
 
 import parser.PHPParser._
-import parser.statements.StatementParser.statement
+import parser.statements.StatementParser.Statement
 
 object Basic {
 
-  def script : P[Script] = {
+  def Script : P[BAst.Script] = {
     isTagProcessed = true
-    P(text ~~ normalStartTag.? ~ statement.rep ~ End).map(t => {
+    P(Text ~~ NormalStartTag.? ~ Statement.rep ~ End).map(t => {
       isTagProcessed = t._2.isDefined
-      Script(t._1, t._3)
+      BAst.Script(t._1, t._3)
     })
   }
 
-  val text : P[Text] = P((!startTag ~~ AnyChar.!).repX).map(t => Text(t.mkString))
+  val Text : P[BAst.Text] = P((!StartTag ~~ AnyChar.!).repX).map(t => BAst.Text(t.mkString))
 
-  def semicolonFactory : P[Option[Text]] =
-    P(";".!.map(_ => None) | ("?>" ~~ text ~~ normalStartTag.?).map(t => {
+  def SemicolonFactory : P[Option[BAst.Text]] =
+    P(";".!.map(_ => None) | ("?>" ~~ Text ~~ NormalStartTag.?).map(t => {
       isTagProcessed = t._2.isDefined
       Some(t._1)
     })
   )
 
-  val normalStartTag = P("<?".! ~~ PHP)
-  val echoStartTag = P("<?=".!)
-  val endTag = P("?>")
-  val startTag = P(normalStartTag | echoStartTag)
+  val NormalStartTag = P("<?".! ~~ PHP)
+  val EchoStartTag = P("<?=".!)
+  val EndTag = P("?>")
+  val StartTag = P(NormalStartTag | EchoStartTag)
 
-  val wsOrSemicolon = P(ws | ";" | "?>")
-  val wsExp = P(ws | "(")
-  val semicolon = P(";" | "?>")
+  val WsOrSemicolon = P(Ws | ";" | "?>")
+  val WsExp = P(Ws | "(")
+  val Semicolon = P(";" | "?>")
 
-  def qualifiedName : P[QualifiedName] = P((NAMESPACE ~ "\\" ~ (name ~ "\\").rep ~ name).map(t => QualifiedName(NamespaceType.LOCAL, t._1, t._2)) |
-    ("\\".!.? ~ (name ~ "\\").rep ~ name).map(t =>
-      if(t._1.isDefined) QualifiedName(NamespaceType.GLOBAL, t._2, t._3)
-      else QualifiedName(NamespaceType.RELATIVE, t._2, t._3)
+  def QualifiedName : P[BAst.QualifiedName] = P((NAMESPACE ~ "\\" ~ (Name ~ "\\").rep ~ Name).map(t => BAst.QualifiedName(BAst.NamespaceType.LOCAL, t._1, t._2)) |
+    ("\\".!.? ~ (Name ~ "\\").rep ~ Name).map(t =>
+      if(t._1.isDefined) BAst.QualifiedName(BAst.NamespaceType.GLOBAL, t._2, t._3)
+      else BAst.QualifiedName(BAst.NamespaceType.RELATIVE, t._2, t._3)
     ))
 
-  val namespaceName: P[Seq[Name]] = P(name.rep(min = 0, sep = "\\"))
+  val NamespaceName: P[Seq[BAst.Name]] = P(Name.rep(min = 0, sep = "\\"))
 }

@@ -2,9 +2,9 @@ package parser.expressions
 
 import fastparse.noApi._
 import parser.literals.WsAPI._
-import parser.literals.Lexical.ws
+import parser.literals.Lexical.Ws
 
-import ast.Expressions._
+import ast.{Expressions => EAst}
 import ast.Statements.ClassDecl
 
 import parser.literals.Keywords._
@@ -12,112 +12,112 @@ import parser.literals.KeywordConversions._
 import parser.literals.Literals._
 
 import parser.Basic._
-import parser.statements.DeclarationParser.classDeclBody
-import parser.expressions.VariableParser.variable
-import parser.expressions.ExpressionParser.{expression, argumentExpressionList, listIntrinsic, primaryExpWithoutVariable, cloneExp, singleExpression}
+import parser.statements.DeclarationParser.ClassDeclBody
+import parser.expressions.VariableParser.Variable
+import parser.expressions.ExpressionParser.{Expression, ArgumentExpressionList, ListIntrinsic, PrimaryExpWithoutVariable, CloneExp, SingleExpression}
 
 /**
   * Created by tobias on 02.06.17.
   */
 object OperatorParser {
 
-  val logicalOrExpr2 : P[Expression] = P(logicalXOrExp.rep(sep=OR.~/, min=1)).map(_.reduceLeft(LogicalOrExp2))
-  val logicalXOrExp : P[Expression] = P(logicalAndExp2.rep(sep=XOR.~/, min=1)).map(_.reduceLeft(LogicalXOrExp))
-  val logicalAndExp2 : P[Expression] = P(condExp.rep(sep=AND.~/, min=1)).map(_.reduceLeft(LogicalAndExp2))
+  val LogicalOrExpr2 : P[EAst.Expression] = P(LogicalXOrExp.rep(sep=OR.~/, min=1)).map(_.reduceLeft(EAst.LogicalOrExp2))
+  val LogicalXOrExp : P[EAst.Expression] = P(LogicalAndExp2.rep(sep=XOR.~/, min=1)).map(_.reduceLeft(EAst.LogicalXOrExp))
+  val LogicalAndExp2 : P[EAst.Expression] = P(CondExp.rep(sep=AND.~/, min=1)).map(_.reduceLeft(EAst.LogicalAndExp2))
 
-  val condExp : P[Expression] = {
-    val conditionalExpFactory : P[Expression => Expression] = P(
-      ("??" ~/ expression).map(e => (x: Expression) => CoalesceExp(x,e))
-        | ("?" ~~ !">" ~/ expression.? ~ ":" ~/ condExp).map(e => (x) => TernaryExp(x,e._1, e._2)))
+  val CondExp : P[EAst.Expression] = {
+    val ConditionalExpFactory : P[EAst.Expression => EAst.Expression] = P(
+      ("??" ~/ Expression).map(e => (x: EAst.Expression) => EAst.CoalesceExp(x,e))
+        | ("?" ~~ !">" ~/ Expression.? ~ ":" ~/ CondExp).map(e => (x) => EAst.TernaryExp(x,e._1, e._2)))
 
-    P((logicalOrExp ~ conditionalExpFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1))
+    P((LogicalOrExp ~ ConditionalExpFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1))
   }
 
-  val logicalOrExp: P[Expression] = P(logicalAndExp.rep(sep="||".~/, min=1)).map(_.reduceLeft(LogicalOrExp))
-  val logicalAndExp: P[Expression] = P(bitwiseOrExp.rep(sep="&&".~/, min=1)).map(_.reduceLeft(LogicalAndExp))
-  val bitwiseOrExp: P[Expression] = P(bitwiseXOrExp.rep(sep=("|" ~~ !"|").~/, min=1)).map(_.reduceLeft(BitwiseOrExp))
-  val bitwiseXOrExp: P[Expression] = P(bitwiseAndExp.rep(sep="^".~/, min=1)).map(_.reduceLeft(BitwiseXOrExp))
-  val bitwiseAndExp: P[Expression] = P(equalityExp.rep(sep=("&" ~~ !"&").~/, min=1)).map(_.reduceLeft(BitwiseAndExp))
+  val LogicalOrExp: P[EAst.Expression] = P(LogicalAndExp.rep(sep="||".~/, min=1)).map(_.reduceLeft(EAst.LogicalOrExp))
+  val LogicalAndExp: P[EAst.Expression] = P(BitwiseOrExp.rep(sep="&&".~/, min=1)).map(_.reduceLeft(EAst.LogicalAndExp))
+  val BitwiseOrExp: P[EAst.Expression] = P(BitwiseXOrExp.rep(sep=("|" ~~ !"|").~/, min=1)).map(_.reduceLeft(EAst.BitwiseOrExp))
+  val BitwiseXOrExp: P[EAst.Expression] = P(BitwiseAndExp.rep(sep="^".~/, min=1)).map(_.reduceLeft(EAst.BitwiseXOrExp))
+  val BitwiseAndExp: P[EAst.Expression] = P(EqualityExp.rep(sep=("&" ~~ !"&").~/, min=1)).map(_.reduceLeft(EAst.BitwiseAndExp))
 
-  val equalityExp: P[Expression] = P(relationalExp ~ (equalityOp ~/ relationalExp).rep)
-    .map(t => t._2.foldLeft(t._1)((exp, op) => EqualityExp(op._1, exp, op._2)))
-  val relationalExp: P[Expression] = P(shiftExp ~ (relationalOp ~ shiftExp).rep)
-    .map(t => t._2.foldLeft(t._1)((exp, op) => RelationalExp(op._1, exp, op._2)))
+  val EqualityExp: P[EAst.Expression] = P(RelationalExp ~ (EqualityOp ~/ RelationalExp).rep)
+    .map(t => t._2.foldLeft(t._1)((exp, op) => EAst.EqualityExp(op._1, exp, op._2)))
+  val RelationalExp: P[EAst.Expression] = P(ShiftExp ~ (RelationalOp ~ ShiftExp).rep)
+    .map(t => t._2.foldLeft(t._1)((exp, op) => EAst.RelationalExp(op._1, exp, op._2)))
 
-  val shiftExp: P[Expression] = {
-    val shiftFactory : P[Expression => Expression] = P(
-      ("<<" ~~ !"=" ~~ !"<" ~/ additiveExp).map(e => (x: Expression) => LShiftExp(x, e))
-        | (">>" ~~ !"=" ~/ additiveExp).map(e => (x: Expression) => RShiftExp(x, e)))
+  val ShiftExp: P[EAst.Expression] = {
+    val ShiftFactory : P[EAst.Expression => EAst.Expression] = P(
+      ("<<" ~~ !"=" ~~ !"<" ~/ AdditiveExp).map(e => (x: EAst.Expression) => EAst.LShiftExp(x, e))
+        | (">>" ~~ !"=" ~/ AdditiveExp).map(e => (x: EAst.Expression) => EAst.RShiftExp(x, e)))
 
-    P(additiveExp ~ shiftFactory.rep)
+    P(AdditiveExp ~ ShiftFactory.rep)
       .map(t => t._2.foldLeft(t._1)((exp, op) => op(exp)))
   }
 
-  val additiveExp: P[Expression] = {
-    val additiveFactory : P[Expression => Expression] = P(
-      ("+" ~/ multExp).map(e => (x: Expression) => AddExp(x, e))
-        | ("-" ~/ multExp).map(e => (x: Expression) => SubExp(x, e))
-        | ("." ~/ multExp).map(e => (x) => SubExp(x, e)))
+  val AdditiveExp: P[EAst.Expression] = {
+    val AdditiveFactory : P[EAst.Expression => EAst.Expression] = P(
+      ("+" ~/ MultExp).map(e => (x: EAst.Expression) => EAst.AddExp(x, e))
+        | ("-" ~/ MultExp).map(e => (x: EAst.Expression) => EAst.SubExp(x, e))
+        | ("." ~/ MultExp).map(e => (x) => EAst.SubExp(x, e)))
 
-    P(multExp ~ additiveFactory.rep)
+    P(MultExp ~ AdditiveFactory.rep)
       .map(t => t._2.foldLeft(t._1)((exp, op) => op(exp)))
   }
 
-  val multExp: P[Expression] = {
-    val multFactory : P[Expression => Expression] = P(
-      ("*" ~/ exponentiationExp).map(e => (x: Expression) => MulExp(x, e))
-        | ("/" ~/ exponentiationExp).map(e => (x: Expression) => DivExp(x, e))
-        | ("%" ~/ exponentiationExp).map(e => (x) => ModExp(x, e)))
+  val MultExp: P[EAst.Expression] = {
+    val MultFactory : P[EAst.Expression => EAst.Expression] = P(
+      ("*" ~/ ExponentiationExp).map(e => (x: EAst.Expression) => EAst.MulExp(x, e))
+        | ("/" ~/ ExponentiationExp).map(e => (x: EAst.Expression) => EAst.DivExp(x, e))
+        | ("%" ~/ ExponentiationExp).map(e => (x) => EAst.ModExp(x, e)))
 
-    P(exponentiationExp ~ multFactory.rep)
+    P(ExponentiationExp ~ MultFactory.rep)
       .map(t => t._2.foldLeft(t._1)((exp, op) => op(exp)))
   }
 
-  val exponentiationExp: P[Expression] = P(instanceOfExp ~ ("**" ~/ expression).?)
-    .map(t => if(t._2.isDefined) ExponentiationExp(t._1, t._2.get) else t._1)
+  val ExponentiationExp: P[EAst.Expression] = P(InstanceOfExp ~ ("**" ~/ Expression).?)
+    .map(t => if(t._2.isDefined) EAst.ExponentiationExp(t._1, t._2.get) else t._1)
 
-  val instanceOfExp : P[Expression] = P(unaryExp ~~
-    (ws ~ INSTANCEOF ~~ &(wsExp) ~/ (qualifiedName.map(Right(_)) | expression.map(Left(_)))).?
-  ).map(t => if(t._2.isDefined) InstanceOfExp(t._1, t._2.get) else t._1)
+  val InstanceOfExp : P[EAst.Expression] = P(UnaryExp ~~
+    (Ws ~ INSTANCEOF ~~ &(WsExp) ~/ (QualifiedName.map(Right(_)) | Expression.map(Left(_)))).?
+  ).map(t => if(t._2.isDefined) EAst.InstanceOfExp(t._1, t._2.get) else t._1)
 
-  val prefixIncrementExp : P[Expression] = P("++" ~/ variable).map(PrefixIncrementExp)
-  val prefixDecrementExp : P[Expression] = P("--" ~/ variable).map(PrefixDecrementExp)
-  val unaryOpExp : P[Expression] = P(unaryOp ~ (singleExpression | unaryExp)).map(t => UnaryOpExp(t._1,t._2))
-  val errorControlExp : P[Expression] = P("@" ~/ expression).map(ErrorControlExp)
-  val shellCommandExp : P[Expression] = P("`" ~~ dqCommandCharSequence ~~ "`").map(ShellCommandExp)
+  val PrefixIncrementExp : P[EAst.Expression] = P("++" ~/ Variable).map(EAst.PrefixIncrementExp)
+  val PrefixDecrementExp : P[EAst.Expression] = P("--" ~/ Variable).map(EAst.PrefixDecrementExp)
+  val UnaryOpExp : P[EAst.Expression] = P(UnaryOp ~ (SingleExpression | UnaryExp)).map(t => EAst.UnaryOpExp(t._1,t._2))
+  val ErrorControlExp : P[EAst.Expression] = P("@" ~/ Expression).map(EAst.ErrorControlExp)
+  val ShellCommandExp : P[EAst.Expression] = P("`" ~~ DqCommandCharSequence ~~ "`").map(EAst.ShellCommandExp)
 
-  val castExp : P[Expression] = {
-    val castType : P[CastType.Value] = P(arrayCastType | binaryCastType | booleanCastType | boolCastType |
-      doubleCastType | integerCastType | intCastType | floatCastType | objectCastType |
-      realCastType | stringCastType | unsetCastType)
+  val CastExp : P[EAst.Expression] = {
+    val CastType : P[EAst.CastType.Value] = P(ArrayCastType | BinaryCastType | BooleanCastType | BoolCastType |
+      DoubleCastType | IntegerCastType | IntCastType | FloatCastType | ObjectCastType |
+      RealCastType | StringCastType | UnsetCastType)
 
-    P("(" ~ castType ~ ")" ~/ expression).map(t => CastExp(t._1, t._2))
+    P("(" ~ CastType ~ ")" ~/ Expression).map(t => EAst.CastExp(t._1, t._2))
   }
 
-  val unaryExp : P[Expression] = P(
-    prefixIncrementExp | prefixDecrementExp | unaryOpExp
-      | errorControlExp | shellCommandExp | castExp | postfixExp)
+  val UnaryExp : P[EAst.Expression] = P(
+    PrefixIncrementExp | PrefixDecrementExp | UnaryOpExp
+      | ErrorControlExp | ShellCommandExp | CastExp | PostfixExp)
 
-  val listAssignment : P[Expression] = P(NoCut(listIntrinsic) ~ "=" ~/ (condExp | singleExpression))
-    .map(t => ListAssignmentExp(t._1, t._2))
+  val ListAssignment : P[EAst.Expression] = P(NoCut(ListIntrinsic) ~ "=" ~/ (CondExp | SingleExpression))
+    .map(t => EAst.ListAssignmentExp(t._1, t._2))
 
-  val objectCreationExp : P[Expression] = P(
-    NEW ~~ &(wsExp) ~/ ((
-      CLASS ~~ &("(" | "{" | ws) ~/ ("(" ~/ argumentExpressionList ~ ")").? ~ classDeclBody)
-        .map(t => AnonymousClassCreationExp(ClassDecl(None, None, t._2._1, t._2._2, t._2._3), t._1))
-      | (expression ~ ("(" ~/ argumentExpressionList ~ ")").?)
-        .map(t => InstanceCreationExp(t._1, t._2)))
+  val ObjectCreationExp : P[EAst.Expression] = P(
+    NEW ~~ &(WsExp) ~/ ((
+      CLASS ~~ &("(" | "{" | Ws) ~/ ("(" ~/ ArgumentExpressionList ~ ")").? ~ ClassDeclBody)
+        .map(t => EAst.AnonymousClassCreationExp(ClassDecl(None, None, t._2._1, t._2._2, t._2._3), t._1))
+      | (Expression ~ ("(" ~/ ArgumentExpressionList ~ ")").?)
+        .map(t => EAst.InstanceCreationExp(t._1, t._2)))
   )
 
-  val postfixExp : P[Expression] = {
-    val postfixOperatorFactory : P[Variable => Expression] = P(
-      "++".!.map(_ => (x: Variable) => PostfixIncrementExp(x))
-        | "--".!.map(_ => (x: Variable) => PostfixDecrementExp(x))
-        | "::" ~ nameWithKeyword.map(n => (x: Variable) => ClassConstAcc(x, n))
-        | ("=" ~ "&".!.? ~ (condExp | singleExpression)).map(e => (x: Variable) => SimpleAssignmentExp(e._1.isDefined, x, e._2))
-        | (assignmentOp ~~ "=" ~/ (condExp | singleExpression)).map(e => (x: Variable) => CompoundAssignmentExp(e._1, x, e._2)))
+  val PostfixExp : P[EAst.Expression] = {
+    val PostfixOperatorFactory : P[EAst.Variable => EAst.Expression] = P(
+      "++".!.map(_ => (x: EAst.Variable) => EAst.PostfixIncrementExp(x))
+        | "--".!.map(_ => (x: EAst.Variable) => EAst.PostfixDecrementExp(x))
+        | "::" ~ NameWithKeyword.map(n => (x: EAst.Variable) => EAst.ClassConstAcc(x, n))
+        | ("=" ~ "&".!.? ~ (CondExp | SingleExpression)).map(e => (x: EAst.Variable) => EAst.SimpleAssignmentExp(e._1.isDefined, x, e._2))
+        | (AssignmentOp ~~ "=" ~/ (CondExp | SingleExpression)).map(e => (x: EAst.Variable) => EAst.CompoundAssignmentExp(e._1, x, e._2)))
 
-    P(listAssignment | primaryExpWithoutVariable | cloneExp | objectCreationExp
-      | (variable ~/ postfixOperatorFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1))
+    P(ListAssignment | PrimaryExpWithoutVariable | CloneExp | ObjectCreationExp
+      | (Variable ~/ PostfixOperatorFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1))
   }
 }
