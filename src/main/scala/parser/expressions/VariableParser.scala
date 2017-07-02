@@ -33,15 +33,15 @@ object VariableParser {
       else EAst.ArrayElement(None, t._1, false))
   )
 
-  val ArrayCreationVar: P[EAst.ArrayCreationVar] = P(
+  val ArrayCreationVar = P(
     ARRAY ~ "(" ~/ !"," ~ ArrayElement.rep(sep = ("," ~ !")").~/) ~ ",".? ~ ")"
       | "[" ~/ !"," ~ ArrayElement.rep(sep = ("," ~ !"]").~/) ~ ",".? ~ "]"
   ).map(EAst.ArrayCreationVar)
 
-  val StringLiteralVar: P[EAst.Variable] = P(StringLiteral).map(EAst.StringLiteralVar)
-  val EnclosedExp: P[EAst.EnclosedExp] = P("(" ~/ Expression ~ ")").map(EAst.EnclosedExp)
-  val ScopeAccVar: P[EAst.ScopeAccessVar] = P((SelfScope | ParentScope | StaticScope) ~~ !NonDigit).map(EAst.ScopeAccessVar)
-  val QualifiedNameVar: P[EAst.QualifiedNameVar] = P(QualifiedName).map(EAst.QualifiedNameVar)
+  val StringLiteralVar = P(StringLiteral).map(EAst.StringLiteralVar)
+  val EnclosedExp = P("(" ~/ Expression ~ ")").map(EAst.EnclosedExp)
+  val ScopeAccVar = P((SelfScope | ParentScope | StaticScope) ~~ !NonDigit).map(EAst.ScopeAccessVar)
+  val QualifiedNameVar = P(QualifiedName).map(EAst.QualifiedNameVar)
 
   val Variable: P[EAst.Variable] = {
     val SingleVariable: P[EAst.Variable] = P(

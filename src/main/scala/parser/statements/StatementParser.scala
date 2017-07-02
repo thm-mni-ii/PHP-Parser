@@ -30,20 +30,20 @@ object StatementParser {
     P(EchoStartTag ~ Expression.rep(min = 1, sep = ",") ~ SemicolonFactory).map(t => SAst.EchoTagStmnt(t._2, t._3))
   }
 
-  val EmptyStmnt: P[SAst.EmptyStmnt] = P(SemicolonFactory).map(SAst.EmptyStmnt)
-  val CompoundStmnt: P[SAst.CompoundStmnt] = P("{" ~/ Statements ~ "}").map(SAst.CompoundStmnt)
-  val NamedLabelStmnt: P[SAst.NamedLabelStmnt] = P(Name ~ ":" ~ Statement).map(t => SAst.NamedLabelStmnt(t._1, t._2))
-  val ExpStmnt: P[SAst.ExpressionStmnt] = P(Expression ~ SemicolonFactory).map(t => SAst.ExpressionStmnt(t._1, t._2))
+  val EmptyStmnt = P(SemicolonFactory).map(SAst.EmptyStmnt)
+  val CompoundStmnt = P("{" ~/ Statements ~ "}").map(SAst.CompoundStmnt)
+  val NamedLabelStmnt = P(Name ~ ":" ~ Statement).map(t => SAst.NamedLabelStmnt(t._1, t._2))
+  val ExpStmnt = P(Expression ~ SemicolonFactory).map(t => SAst.ExpressionStmnt(t._1, t._2))
 
-  val TryStmnt: P[SAst.TryStmnt] = {
-    val CatchClause: P[SAst.CatchClause] = P(CATCH ~ "(" ~/ QualifiedName ~ VariableName ~ ")" ~/ CompoundStmnt)
+  val TryStmnt = {
+    val CatchClause = P(CATCH ~ "(" ~/ QualifiedName ~ VariableName ~ ")" ~/ CompoundStmnt)
       .map(t => SAst.CatchClause(t._1, t._2, t._3))
 
     P(TRY ~ &("{") ~/ CompoundStmnt ~/ CatchClause.rep() ~ (FINALLY ~ &("{") ~/ CompoundStmnt).?)
       .map(t => SAst.TryStmnt(t._1, t._2, t._3))
   }
 
-  val DeclareStmnt: P[SAst.DeclareStmnt] = {
+  val DeclareStmnt = {
     val DeclareDeclarative: P[SAst.DeclareDeclarative.Value] =
       P(TicksDeclarative | EncodingDeclarative | StrictTypesDeclarative)
 
@@ -77,7 +77,7 @@ object StatementParser {
       ~ (":" ~/ PossibleFunctionType).?)
     .map(t => (SAst.FuncHeader(t._1.isDefined, None, t._2.map(g => g._3(g._1, g._2)), t._4), t._3.getOrElse(Seq())))
 
-  val FunctionDefStmnt: P[SAst.FuncDef] = P(FuncHeader ~ &("{") ~/ CompoundStmnt)
+  val FunctionDefStmnt = P(FuncHeader ~ &("{") ~/ CompoundStmnt)
     .map(t => SAst.FuncDef(t._1, t._2))
 
   val NamespaceDefStmnt: P[SAst.NamespaceDef] = P(

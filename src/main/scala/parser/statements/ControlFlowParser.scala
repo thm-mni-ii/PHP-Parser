@@ -22,7 +22,7 @@ object ControlFlowParser {
 
   // selection statements
 
-  val IfStmnt: P[SAst.IfStmnt] = {
+  val IfStmnt = {
     val IfBody: P[(Seq[ast.Statements.Statement], Seq[(EAst.Expression, Seq[SAst.Statement])], Option[Seq[SAst.Statement]], Option[BAst.Text])] = P((
       ":" ~/ Statements
         ~ (ELSEIF ~ "(" ~/ Expression ~ ")" ~/ ":" ~/ Statements).rep
@@ -37,13 +37,12 @@ object ControlFlowParser {
       .map(t => SAst.IfStmnt(t._1, t._2._1, t._2._2, t._2._3, t._2._4))
   }
 
-  val SwitchStmnt: P[SAst.SwitchStmnt] = {
-    val CaseBlock: P[SAst.CaseBlock] =
-      P(CASE ~~ &(WsExp) ~/ Expression ~ ((":" ~/ Statements) | Statement.rep(1)))
-        .map(t => SAst.CaseBlock(t._1, t._2))
+  val SwitchStmnt = {
+    val CaseBlock = P(CASE ~~ &(WsExp) ~/ Expression ~ ((":" ~/ Statements) | Statement.rep(1)))
+      .map(t => SAst.CaseBlock(t._1, t._2))
 
-    val DefaultBlock: P[SAst.DefaultBlock] =
-      P(DEFAULT ~ (":" ~/ Statements | Statement.rep(1))).map(SAst.DefaultBlock)
+    val DefaultBlock = P(DEFAULT ~ (":" ~/ Statements | Statement.rep(1)))
+      .map(SAst.DefaultBlock)
 
     val SwitchBody: P[(Seq[SAst.SwitchBlock], Option[BAst.Text])] = P(
       (":" ~/ (CaseBlock | DefaultBlock).rep ~ ENDSWITCH ~ SemicolonFactory)
@@ -58,7 +57,7 @@ object ControlFlowParser {
 
   // iteration statements
 
-  val WhileStmnt: P[SAst.WhileStmnt] = {
+  val WhileStmnt = {
     val WhileBody: P[(Seq[SAst.Statement], Option[BAst.Text])] = P(
       (":" ~/ Statements ~ ENDWHILE ~ SemicolonFactory)
         | Statement.map(t => (Seq(t), None))
@@ -68,25 +67,24 @@ object ControlFlowParser {
       .map(t => SAst.WhileStmnt(t._1, t._2._1, t._2._2))
   }
 
-  val DoStmnt: P[SAst.DoStmnt] =
+  val DoStmnt =
     P(DO ~~ &(WsExp | Semicolon) ~/ Statement ~/ WHILE ~/ "(" ~/ Expression ~ ")" ~/ SemicolonFactory)
       .map(t => SAst.DoStmnt(t._2, t._1, t._3))
 
-  val ForStmnt: P[SAst.ForStmnt] = {
+  val ForStmnt = {
     val ForBody: P[(Seq[SAst.Statement], Option[BAst.Text])] = P(
       (":" ~/ Statements ~ ENDFOR ~ SemicolonFactory)
         | Statement.map(t => (Seq(t), None))
     )
 
-    val ForExpressionList: P[SAst.ForExpressionList] =
-      P(Expression.rep(sep = ",".~/) ~ SemicolonFactory)
-        .map(t => SAst.ForExpressionList(t._1, t._2))
+    val ForExpressionList = P(Expression.rep(sep = ",".~/) ~ SemicolonFactory)
+      .map(t => SAst.ForExpressionList(t._1, t._2))
 
     P(FOR ~ "(" ~/ ForExpressionList ~/ ForExpressionList ~/ Expression.rep(sep = ",".~/) ~ ")" ~/ ForBody)
       .map(t => SAst.ForStmnt(t._1, t._2, SAst.ForExpressionList(t._3, None), t._4._1, t._4._2))
   }
 
-  val ForeachStmnt: P[SAst.ForeachStmnt] = {
+  val ForeachStmnt = {
     val ForeachBody: P[(Seq[SAst.Statement], Option[BAst.Text])] = P(
       (":" ~/ Statements ~ ENDFOREACH ~ SemicolonFactory)
         | Statement.map(t => (Seq(t), None))

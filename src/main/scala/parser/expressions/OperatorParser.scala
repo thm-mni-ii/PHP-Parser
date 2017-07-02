@@ -21,9 +21,9 @@ import parser.expressions.ExpressionParser.{Expression, ArgumentExpressionList, 
   */
 object OperatorParser {
 
-  val LogicalOrExpr2 : P[EAst.Expression] = P(LogicalXOrExp.rep(sep=OR.~/, min=1)).map(_.reduceLeft(EAst.LogicalOrExp2))
-  val LogicalXOrExp : P[EAst.Expression] = P(LogicalAndExp2.rep(sep=XOR.~/, min=1)).map(_.reduceLeft(EAst.LogicalXOrExp))
-  val LogicalAndExp2 : P[EAst.Expression] = P(CondExp.rep(sep=AND.~/, min=1)).map(_.reduceLeft(EAst.LogicalAndExp2))
+  val LogicalOrExpr2 = P(LogicalXOrExp.rep(sep=OR.~/, min=1)).map(_.reduceLeft(EAst.LogicalOrExp2))
+  val LogicalXOrExp = P(LogicalAndExp2.rep(sep=XOR.~/, min=1)).map(_.reduceLeft(EAst.LogicalXOrExp))
+  val LogicalAndExp2 = P(CondExp.rep(sep=AND.~/, min=1)).map(_.reduceLeft(EAst.LogicalAndExp2))
 
   val CondExp : P[EAst.Expression] = {
     val ConditionalExpFactory : P[EAst.Expression => EAst.Expression] = P(
@@ -33,11 +33,11 @@ object OperatorParser {
     P((LogicalOrExp ~ ConditionalExpFactory.?).map(t => if(t._2.isDefined) t._2.get(t._1) else t._1))
   }
 
-  val LogicalOrExp: P[EAst.Expression] = P(LogicalAndExp.rep(sep="||".~/, min=1)).map(_.reduceLeft(EAst.LogicalOrExp))
-  val LogicalAndExp: P[EAst.Expression] = P(BitwiseOrExp.rep(sep="&&".~/, min=1)).map(_.reduceLeft(EAst.LogicalAndExp))
-  val BitwiseOrExp: P[EAst.Expression] = P(BitwiseXOrExp.rep(sep=("|" ~~ !"|").~/, min=1)).map(_.reduceLeft(EAst.BitwiseOrExp))
-  val BitwiseXOrExp: P[EAst.Expression] = P(BitwiseAndExp.rep(sep="^".~/, min=1)).map(_.reduceLeft(EAst.BitwiseXOrExp))
-  val BitwiseAndExp: P[EAst.Expression] = P(EqualityExp.rep(sep=("&" ~~ !"&").~/, min=1)).map(_.reduceLeft(EAst.BitwiseAndExp))
+  val LogicalOrExp = P(LogicalAndExp.rep(sep="||".~/, min=1)).map(_.reduceLeft(EAst.LogicalOrExp))
+  val LogicalAndExp = P(BitwiseOrExp.rep(sep="&&".~/, min=1)).map(_.reduceLeft(EAst.LogicalAndExp))
+  val BitwiseOrExp = P(BitwiseXOrExp.rep(sep=("|" ~~ !"|").~/, min=1)).map(_.reduceLeft(EAst.BitwiseOrExp))
+  val BitwiseXOrExp = P(BitwiseAndExp.rep(sep="^".~/, min=1)).map(_.reduceLeft(EAst.BitwiseXOrExp))
+  val BitwiseAndExp = P(EqualityExp.rep(sep=("&" ~~ !"&").~/, min=1)).map(_.reduceLeft(EAst.BitwiseAndExp))
 
   val EqualityExp: P[EAst.Expression] = P(RelationalExp ~ (EqualityOp ~/ RelationalExp).rep)
     .map(t => t._2.foldLeft(t._1)((exp, op) => EAst.EqualityExp(op._1, exp, op._2)))
@@ -80,13 +80,13 @@ object OperatorParser {
     (Ws ~ INSTANCEOF ~~ &(WsExp) ~/ (QualifiedName.map(Right(_)) | Expression.map(Left(_)))).?
   ).map(t => if(t._2.isDefined) EAst.InstanceOfExp(t._1, t._2.get) else t._1)
 
-  val PrefixIncrementExp : P[EAst.Expression] = P("++" ~/ Variable).map(EAst.PrefixIncrementExp)
-  val PrefixDecrementExp : P[EAst.Expression] = P("--" ~/ Variable).map(EAst.PrefixDecrementExp)
-  val UnaryOpExp : P[EAst.Expression] = P(UnaryOp ~ (SingleExpression | UnaryExp)).map(t => EAst.UnaryOpExp(t._1,t._2))
-  val ErrorControlExp : P[EAst.Expression] = P("@" ~/ Expression).map(EAst.ErrorControlExp)
-  val ShellCommandExp : P[EAst.Expression] = P("`" ~~ DqCommandCharSequence ~~ "`").map(EAst.ShellCommandExp)
+  val PrefixIncrementExp = P("++" ~/ Variable).map(EAst.PrefixIncrementExp)
+  val PrefixDecrementExp = P("--" ~/ Variable).map(EAst.PrefixDecrementExp)
+  val UnaryOpExp = P(UnaryOp ~ (SingleExpression | UnaryExp)).map(t => EAst.UnaryOpExp(t._1,t._2))
+  val ErrorControlExp = P("@" ~/ Expression).map(EAst.ErrorControlExp)
+  val ShellCommandExp = P("`" ~~ DqCommandCharSequence ~~ "`").map(EAst.ShellCommandExp)
 
-  val CastExp : P[EAst.Expression] = {
+  val CastExp = {
     val CastType : P[EAst.CastType.Value] = P(ArrayCastType | BinaryCastType | BooleanCastType | BoolCastType |
       DoubleCastType | IntegerCastType | IntCastType | FloatCastType | ObjectCastType |
       RealCastType | StringCastType | UnsetCastType)
@@ -98,7 +98,7 @@ object OperatorParser {
     PrefixIncrementExp | PrefixDecrementExp | UnaryOpExp
       | ErrorControlExp | ShellCommandExp | CastExp | PostfixExp)
 
-  val ListAssignment : P[EAst.Expression] = P(NoCut(ListIntrinsic) ~ "=" ~/ (CondExp | SingleExpression))
+  val ListAssignment = P(NoCut(ListIntrinsic) ~ "=" ~/ (CondExp | SingleExpression))
     .map(t => EAst.ListAssignmentExp(t._1, t._2))
 
   val ObjectCreationExp : P[EAst.Expression] = P(

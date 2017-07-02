@@ -23,20 +23,18 @@ object DeclarationParser {
 
   // declaration statements
 
-  private val ConstElem: P[SAst.ConstElement] = P(Name ~ "=" ~ Expression)
+  private val ConstElem = P(Name ~ "=" ~ Expression)
     .map(t => SAst.ConstElement(t._1, t._2))
 
-  val ConstDeclStmnt: P[SAst.ConstDecl] = {
-    P(CONST ~~ &(Ws) ~/ ConstElem.rep ~ SemicolonFactory)
+  val ConstDeclStmnt = P(CONST ~~ &(Ws) ~/ ConstElem.rep ~ SemicolonFactory)
       .map(t => SAst.ConstDecl(t._1, t._2))
-  }
 
-  val GlobalDeclStmnt: P[SAst.GlobalDecl] = P(GLOBAL ~~ &(Ws) ~/ SimpleVariable.rep(sep = ",".~/) ~ SemicolonFactory)
+  val GlobalDeclStmnt = P(GLOBAL ~~ &(Ws) ~/ SimpleVariable.rep(sep = ",".~/) ~ SemicolonFactory)
     .map(t => SAst.GlobalDecl(t._1, t._2))
 
 
-  val FunctionStaticDeclStmnt: P[SAst.FuncStaticDecl] = {
-    val StaticVarElement: P[SAst.StaticVarElement] = P(VariableName ~ ("=" ~/ Expression).?)
+  val FunctionStaticDeclStmnt = {
+    val StaticVarElement = P(VariableName ~ ("=" ~/ Expression).?)
       .map(t => SAst.StaticVarElement(t._1, t._2))
 
     P(STATIC ~~ &(Ws) ~/ StaticVarElement.rep(sep = ",".~/) ~ SemicolonFactory)
@@ -65,16 +63,16 @@ object DeclarationParser {
   private val VisibilityMod: P[SAst.VisibilityModifier] = P(PublicMod | PrivateMod | ProtectedMod)
   private val ClassMod: P[SAst.ClassModifier] = P(AbstractMod | FinalMod)
   private val MethodMod: P[SAst.MethodModifier] = P(VisibilityMod | StaticMod | ClassMod)
-  private val PropertyMod: P[SAst.PropertyModifier] = P(NoMod |
-    (VisibilityMod ~ StaticMod.?).map(t => SAst.CombinedMod(t._2, Some(t._1)))
+  private val PropertyMod: P[SAst.PropertyModifier] = P(NoMod
+    | (VisibilityMod ~ StaticMod.?).map(t => SAst.CombinedMod(t._2, Some(t._1)))
     | (StaticMod ~ VisibilityMod.?).map(t => SAst.CombinedMod(Some(t._1), t._2)))
 
   // member declarations
 
-  val ClassConstDecl: P[SAst.ClassConstDecl] = P((VisibilityMod ~~ &(Ws)).? ~ CONST ~~ &(Ws) ~/ ConstElem.rep ~ SemicolonFactory)
+  val ClassConstDecl = P((VisibilityMod ~~ &(Ws)).? ~ CONST ~~ &(Ws) ~/ ConstElem.rep ~ SemicolonFactory)
     .map(t => SAst.ClassConstDecl(t._1, t._2, t._3))
 
-  val PropertyDecl: P[SAst.PropertyDecl] = {
+  val PropertyDecl = {
     val propertyElem: P[SAst.PropertyElement] = P(VariableName ~ ("=" ~ Expression).?)
       .map(t => SAst.PropertyElement(t._1, t._2))
 
@@ -82,7 +80,7 @@ object DeclarationParser {
       .map(t => SAst.PropertyDecl(t._1, t._2, t._3))
   }
 
-  val MethodDecl: P[SAst.MethodDecl] = {
+  val MethodDecl = {
     val BodyOrEnd: P[(Option[SAst.CompoundStmnt], Option[BAst.Text])] =
       P(SemicolonFactory.map((None, _)) | CompoundStmnt.map(t => (Some(t), None)))
 
@@ -90,7 +88,7 @@ object DeclarationParser {
       .map(t => SAst.MethodDecl(t._1, t._2, t._3._1, t._3._2))
   }
 
-  val TraitUseClause: P[SAst.TraitUseClause] = {
+  val TraitUseClause = {
     val TraitUseSpec: P[SAst.TraitUseSpec] =
       P((Name ~~ &(Ws) ~ INSTEADOF ~~ &(Ws) ~ Name).map(t => SAst.SelectInsteadofClause(t._1, t._2))
         | (Name ~~ &(Ws) ~ AS ~~ &(Ws) ~ (VisibilityMod ~~ &(Ws)).? ~ Name).map(t => SAst.TraitAliasClause(t._1, t._2, Some(t._3)))
@@ -114,13 +112,13 @@ object DeclarationParser {
       ~ "{" ~/ ClassMemberDecl.rep ~ "}")
   }
 
-  val ClassDeclStmnt: P[SAst.ClassDecl] = P(ClassMod.? ~ CLASS ~~ &(Ws) ~/ Name ~~ ClassDeclBody)
+  val ClassDeclStmnt = P(ClassMod.? ~ CLASS ~~ &(Ws) ~/ Name ~~ ClassDeclBody)
     .map(t => SAst.ClassDecl(t._1, Some(t._2), t._3._1, t._3._2, t._3._3))
 
 
   // interface declarations
 
-  val InterfaceDeclStmnt: P[SAst.InterfaceDecl] = {
+  val InterfaceDeclStmnt = {
     val interfaceMemberDecl: P[SAst.MemberDecl] = P(ClassConstDecl | MethodDecl)
 
     P(INTERFACE ~~ &(Ws) ~/ Name ~~ (&(Ws)
@@ -132,7 +130,7 @@ object DeclarationParser {
 
   // trait declarations
 
-  val TraitDeclStmnt: P[SAst.TraitDecl] = {
+  val TraitDeclStmnt = {
     val TraitMemberDecl: P[SAst.MemberDecl] = P(PropertyDecl | MethodDecl | TraitUseClause)
 
     P(TRAIT ~~ &(Ws) ~/ Name
