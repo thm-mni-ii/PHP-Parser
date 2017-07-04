@@ -10,7 +10,6 @@ import parser.literals.KeywordConversions._
 import parser.literals.Keywords._
 import parser.literals.Literals._
 
-import parser.PHPParser.isTagProcessed
 import parser.Basic.{EchoStartTag, QualifiedName, SemicolonFactory}
 import parser.expressions.ExpressionParser.Expression
 import parser.statements.ControlFlowParser._
@@ -21,14 +20,19 @@ import parser.statements.DeclarationParser._
   */
 object StatementParser {
 
-  def Statement: P[SAst.Statement] = if (isTagProcessed) PossibleStatements else EchoTagStmnt
+  val Statement: P[SAst.Statement] = P(CompoundStmnt | NamedLabelStmnt | SelectionStmnt | IterationStmnt | JumpStmnt | TryStmnt
+    | DeclareStmnt | ConstDeclStmnt | FunctionDefStmnt | ClassDeclStmnt | InterfaceDeclStmnt | TraitDeclStmnt
+    | NamespaceDefStmnt | NamespaceUseDeclStmnt | GlobalDeclStmnt | FunctionStaticDeclStmnt | EmptyStmnt | ExpStmnt)
 
-  val Statements: P[Seq[SAst.Statement]] = P(Statement.rep)
+  val Statements: P[Seq[SAst.Statement]] = P(Statement.? ~ AvailableStatement.rep).map(t => t._1 match {
+    case Some(stmnt) => stmnt +: t._2
+    case None => t._2
+  })
 
-  def EchoTagStmnt: P[SAst.EchoTagStmnt] = {
-    isTagProcessed = true
-    P(EchoStartTag ~ Expression.rep(min = 1, sep = ",") ~ SemicolonFactory).map(t => SAst.EchoTagStmnt(t._2, t._3))
-  }
+  val AvailableStatement: P[SAst.Statement] = P(EchoTagStmnt | Statement)
+
+  val EchoTagStmnt: P[SAst.EchoTagStmnt] = P(EchoStartTag ~ Expression.rep(min = 1, sep = ",") ~ SemicolonFactory)
+    .map(t => SAst.EchoTagStmnt(t._2, t._3))
 
   val EmptyStmnt = P(SemicolonFactory).map(SAst.EmptyStmnt)
   val CompoundStmnt = P("{" ~/ Statements ~ "}").map(SAst.CompoundStmnt)
@@ -83,9 +87,4 @@ object StatementParser {
   val NamespaceDefStmnt: P[SAst.NamespaceDef] = P(
     (NAMESPACE ~~ &(Ws) ~ QualifiedName ~ SemicolonFactory).map(t => SAst.NamespaceDef(Some(t._1), None, t._2))
       | (NAMESPACE ~~ &(Ws) ~/ QualifiedName.? ~ CompoundStmnt).map(t => SAst.NamespaceDef(t._1, Some(t._2), None)))
-
-
-  private val PossibleStatements: P[SAst.Statement] = P(CompoundStmnt | NamedLabelStmnt | SelectionStmnt | IterationStmnt | JumpStmnt | TryStmnt
-    | DeclareStmnt | ConstDeclStmnt | FunctionDefStmnt | ClassDeclStmnt | InterfaceDeclStmnt | TraitDeclStmnt
-    | NamespaceDefStmnt | NamespaceUseDeclStmnt | GlobalDeclStmnt | FunctionStaticDeclStmnt | EmptyStmnt | ExpStmnt)
 }

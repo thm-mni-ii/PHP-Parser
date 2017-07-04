@@ -119,11 +119,11 @@ object DeclarationParser {
   // interface declarations
 
   val InterfaceDeclStmnt = {
-    val interfaceMemberDecl: P[SAst.MemberDecl] = P(ClassConstDecl | MethodDecl)
+    val InterfaceMemberDecl: P[SAst.MemberDecl] = P(ClassConstDecl | MethodDecl)
 
     P(INTERFACE ~~ &(Ws) ~/ Name ~~ (&(Ws)
       ~ EXTENDS ~~ &(Ws) ~ QualifiedName.rep(sep = ",".~/)).?
-      ~ "{" ~/ interfaceMemberDecl.rep ~ "}"
+      ~ "{" ~/ InterfaceMemberDecl.rep ~ "}"
     ).map(t => SAst.InterfaceDecl(t._1, t._2, t._3))
   }
 
