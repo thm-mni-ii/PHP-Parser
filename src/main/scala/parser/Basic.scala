@@ -30,11 +30,12 @@ object Basic {
   val SemicolonFactory : P[Option[BAst.Text]] =
     P(";".!.map(_ => None) | ("?>" ~~ Text ~~ ((NormalStartTag ~~ !EchoStartTag) | EchoStartTag | End)).map(t => Some(t._1)))
 
-  val QualifiedName : P[BAst.QualifiedName] = P((NAMESPACE ~ "\\" ~ (Name ~ "\\").rep ~ Name).map(t => BAst.QualifiedName(BAst.NamespaceType.LOCAL, t._1, t._2)) |
-    ("\\".!.? ~ (Name ~ "\\").rep ~ Name).map(t =>
-      if(t._1.isDefined) BAst.QualifiedName(BAst.NamespaceType.GLOBAL, t._2, t._3)
-      else BAst.QualifiedName(BAst.NamespaceType.RELATIVE, t._2, t._3)
-    ))
+  val QualifiedName : P[BAst.QualifiedName] = P((NAMESPACE ~ "\\" ~ (Name ~ "\\").rep ~ Name).map {
+    case (path, name) => BAst.QualifiedName(BAst.NamespaceType.LOCAL, path, name)
+  } | ("\\".!.? ~ (Name ~ "\\").rep ~ Name).map {
+    case (Some(_), path, name) => BAst.QualifiedName(BAst.NamespaceType.GLOBAL, path, name)
+    case (None, path, name) =>  BAst.QualifiedName(BAst.NamespaceType.RELATIVE, path, name)
+  })
 
   val NamespaceName: P[Seq[BAst.Name]] = P(Name.rep(min = 0, sep = "\\"))
 }
