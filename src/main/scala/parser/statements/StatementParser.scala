@@ -40,7 +40,7 @@ object StatementParser {
   val ExpStmnt = P(Expression ~ SemicolonFactory).map(t => SAst.ExpressionStmnt(t._1, t._2))
 
   val TryStmnt = {
-    val CatchClause = P(CATCH ~ "(" ~/ QualifiedName ~ VariableName ~ ")" ~/ CompoundStmnt)
+    val CatchClause = P(CATCH ~ "(" ~/ QualifiedName ~~ Ws ~ VariableName ~ ")" ~/ CompoundStmnt)
       .map(t => SAst.CatchClause(t._1, t._2, t._3))
 
     P(TRY ~ &("{") ~/ CompoundStmnt ~/ CatchClause.rep() ~ (FINALLY ~ &("{") ~/ CompoundStmnt).?)
