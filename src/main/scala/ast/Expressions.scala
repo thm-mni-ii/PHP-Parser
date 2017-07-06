@@ -111,7 +111,4 @@ object Expressions {
   case class ArgumentExpression(isVariadic: Boolean, exp: Expression)
 
   case class ClassConstAcc(from: Variable, name: Name) extends Accessor(from)
-
-  //unused
-  case class SpecialExp() extends Expression
 }

@@ -62,30 +62,4 @@ object ExpressionParser {
 
     P(ArgumentExp.rep(sep=","))
   }
-
-  //unused part
-
-  //val Expression : P[Expression] = P(exp1).map(_ => SpecialExp())
-
-  def exp1 : P[EAst.Expression] = P((randomOutside.? ~ "(" ~ exp2.? ~ ")" ~ exp1.?).map(_ => EAst.SpecialExp()) |
-    (randomOutside.? ~ "{" ~ exp2.? ~ "}" ~  exp1.?) .map(_ => EAst.SpecialExp()) |
-    (randomOutside.? ~ "[" ~ exp2.? ~ "]" ~ exp1.?) .map(_ => EAst.SpecialExp()) |
-    (randomOutside ~ (":".rep(1) ~ exp1).?) .map(_ => EAst.SpecialExp()))
-
-  def exp2 : P[EAst.Expression] = P((random.? ~ "(" ~ exp2.? ~ ")" ~ exp2.?) .map(_ => EAst.SpecialExp()) |
-    (random.? ~ "{" ~ exp2.? ~ "}" ~ exp2.?) .map(_ => EAst.SpecialExp()) |
-    (random.? ~ "[" ~ exp2.? ~ "]" ~ exp2.?) .map(_ => EAst.SpecialExp()) |
-    (random ~ (":".rep(1) ~ exp2).?) .map(_ => EAst.SpecialExp()))
-
-  //val random1 : P[Expression] = """[^\(\)\{\}\[\]:]+""".r ^^^ SpecialExp()
-
-  //val randomOutside1 : P[Expression] = """[^\(\)\{\}\[\]:,;]+""".r ^^^ SpecialExp()
-
-  def charSeqInside = "(){}[]:"
-  def charSeqOutside = "(){}[]:,;"
-
-  def random = P(CharsWhile(charSeqInside.indexOf(_) == -1, 1))
-  def randomOutside = P(CharsWhile(charSeqOutside.indexOf(_) == -1, 1))
-
-  //end unused part
 }
