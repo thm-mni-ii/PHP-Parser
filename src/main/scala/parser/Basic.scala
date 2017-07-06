@@ -28,7 +28,7 @@ object Basic {
   val Text : P[BAst.Text] = P((!StartTag ~~ AnyChar.!).repX).map(t => BAst.Text(t.mkString))
 
   val SemicolonFactory : P[Option[BAst.Text]] =
-    P(";".!.map(_ => None) | ("?>" ~~ Text ~~ ((NormalStartTag ~~ !EchoStartTag) | EchoStartTag | End)).map(t => Some(t._1)))
+    P((";".!.map(_ => None) ~ !EchoStartTag) | ("?>" ~~ Text ~~ ((NormalStartTag ~~ !EchoStartTag) | EchoStartTag | End)).map(t => Some(t._1)))
 
   val QualifiedName : P[BAst.QualifiedName] = P((NAMESPACE ~ "\\" ~ (Name ~ "\\").rep ~ Name).map {
     case (path, name) => BAst.QualifiedName(BAst.NamespaceType.LOCAL, path, name)

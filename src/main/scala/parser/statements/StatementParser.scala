@@ -31,20 +31,32 @@ object StatementParser {
 
   val AvailableStatement: P[SAst.Statement] = P(EchoTagStmnt | Statement)
 
-  val EchoTagStmnt: P[SAst.EchoTagStmnt] = P(EchoStartTag ~ Expression.rep(min = 1, sep = ",") ~ SemicolonFactory)
-    .map(t => SAst.EchoTagStmnt(t._2, t._3))
+  val EchoTagStmnt = P(EchoStartTag ~ Expression.rep(min = 1, sep = ",") ~ SemicolonFactory).map {
+    case (_, expressions, text) => wrap(SAst.EchoTagStmnt(expressions), text)
+  }
 
-  val EmptyStmnt = P(SemicolonFactory).map(SAst.EmptyStmnt)
+  private[statements] def wrap(stmnt: SAst.Statement, text: Option[BAst.Text]): SAst.Statement = text match {
+    case Some(_) => SAst.EndTagStmnt(stmnt, text)
+    case None => stmnt
+  }
+
+  val EmptyStmnt = P(SemicolonFactory).map(wrap(SAst.EmptyStmnt(), _))
   val CompoundStmnt = P("{" ~/ Statements ~ "}").map(SAst.CompoundStmnt)
-  val NamedLabelStmnt = P(Name ~ ":" ~ Statement).map(t => SAst.NamedLabelStmnt(t._1, t._2))
-  val ExpStmnt = P(Expression ~ SemicolonFactory).map(t => SAst.ExpressionStmnt(t._1, t._2))
+  val NamedLabelStmnt = P(Name ~ ":" ~ Statement).map {
+    case (name, stmnt) => SAst.NamedLabelStmnt(name, stmnt)
+  }
+  val ExpStmnt = P(Expression ~ SemicolonFactory).map {
+    case (exp, text) => wrap(SAst.ExpressionStmnt(exp), text)
+  }
 
   val TryStmnt = {
-    val CatchClause = P(CATCH ~ "(" ~/ QualifiedName ~~ Ws ~ VariableName ~ ")" ~/ CompoundStmnt)
-      .map(t => SAst.CatchClause(t._1, t._2, t._3))
+    val CatchClause = P(CATCH ~ "(" ~/ QualifiedName ~~ Ws ~ VariableName ~ ")" ~/ CompoundStmnt).map {
+      case (qName, varName, stmnt) => SAst.CatchClause(qName, varName, stmnt)
+    }
 
-    P(TRY ~ &("{") ~/ CompoundStmnt ~/ CatchClause.rep() ~ (FINALLY ~ &("{") ~/ CompoundStmnt).?)
-      .map(t => SAst.TryStmnt(t._1, t._2, t._3))
+    P(TRY ~ &("{") ~/ CompoundStmnt ~/ CatchClause.rep() ~ (FINALLY ~ &("{") ~/ CompoundStmnt).?).map {
+      case (stmnt, clauses, finallyStmnt) => SAst.TryStmnt(stmnt, clauses, finallyStmnt)
+    }
   }
 
   val DeclareStmnt = {
@@ -53,10 +65,11 @@ object StatementParser {
 
     val DeclareBody: P[(Seq[SAst.Statement], Option[BAst.Text])] =
       P(":" ~/ Statements ~ ENDDECLARE ~ SemicolonFactory |
-        Statement.map(t => (Seq(t), None)))
+        Statement.map(stmnt => (Seq(stmnt), None)))
 
-    P(DECLARE ~ "(" ~/ DeclareDeclarative ~ "=" ~ Literal ~ ")" ~/ DeclareBody)
-      .map(t => SAst.DeclareStmnt(t._1, t._2, t._3._1, t._3._2))
+    P(DECLARE ~ "(" ~/ DeclareDeclarative ~ "=" ~ Literal ~ ")" ~/ DeclareBody).map {
+      case (decl, literal, (stmnt, text)) => wrap(SAst.DeclareStmnt(decl, literal, stmnt), text)
+    }
   }
 
 
@@ -64,27 +77,41 @@ object StatementParser {
     BoolType | FloatType | IntType | StringType | QualifiedName.map(SAst.QualifiedType))
   val PossibleFunctionType: P[SAst.PossibleTypes] = P(VoidType | TypeDecl)
 
-  private val ParamType: P[(Option[SAst.TypeDecl], Boolean)] = P(TypeDecl.? ~ "&".!.?)
-    .map(t => (t._1, t._2.isDefined))
-  private val ParameterDecl: P[(Option[SAst.TypeDecl], Boolean) => SAst.ParameterDecl] =
-    P(("..." ~ VariableName).map(name => (a: Option[SAst.TypeDecl], b: Boolean) => SAst.VariadicParam(a, b, name))
-      | (VariableName ~ ("=" ~ Expression).?).map(t => (a: Option[SAst.TypeDecl], b: Boolean) => SAst.SimpleParam(a, b, t._1, t._2)))
+  private val ParamType: P[(Option[SAst.TypeDecl], Boolean)] = P(TypeDecl.? ~ "&".!.?.map(_.isDefined))
+  private val ParameterDecl: P[SAst.ParameterDecl] = {
+    val ParameterDeclFactory: P[(Option[SAst.TypeDecl], Boolean) => SAst.ParameterDecl] = P(
+      ("..." ~ VariableName).map(name => (a: Option[SAst.TypeDecl], b: Boolean) => SAst.VariadicParam(a, b, name))
+        | (VariableName ~ ("=" ~ Expression).?).map(t => (a: Option[SAst.TypeDecl], b: Boolean) => SAst.SimpleParam(a, b, t._1, t._2)))
+
+    P(ParamType ~ ParameterDeclFactory).map {
+      case (typeDecl, isRef, toParamDecl) => toParamDecl(typeDecl, isRef)
+    }
+  }
 
   private[statements] val FuncHeader: P[SAst.FuncHeader] =
-    P(FUNCTION ~~ &(Ws) ~ "&".!.? ~ Name ~/ "(" ~/ (ParamType ~ ParameterDecl).rep(sep = ",".~/) ~ ")" ~/ (":" ~/ PossibleFunctionType).?)
-      .map(t => SAst.FuncHeader(t._1.isDefined, Some(t._2), t._3.map(g => g._3(g._1, g._2)), t._4))
+    P(FUNCTION ~~ &(Ws) ~ "&".!.? ~ Name ~/ "("
+      ~/ ParameterDecl.rep(sep = ",".~/) ~ ")" ~/ (":" ~/ PossibleFunctionType).?
+    ).map {
+      case (returnRef, name, params, returnValue) => SAst.FuncHeader(returnRef.isDefined, Some(name), params, returnValue)
+    }
 
-  private[parser] val AnonymousFuncHeader: P[(SAst.FuncHeader, Seq[(Boolean, EAst.SimpleNameVar)])] = P(
-    FUNCTION ~~ &(Ws | "(") ~ "&".!.?
-      ~ "(" ~/ (ParamType ~ ParameterDecl).rep(sep = ",".~/) ~ ")"
+  private[parser] val AnonymousFuncHeader: P[(SAst.FuncHeader, Seq[(Boolean, EAst.SimpleNameVar)])] =
+    P(FUNCTION ~~ &(Ws | "(") ~ "&".!.?
+      ~ "(" ~/ ParameterDecl.rep(sep = ",".~/) ~ ")"
       ~/ (USE ~ "(" ~ ("&".!.?.map(_.isDefined) ~ VariableName).rep(1, sep = ",") ~ ")").?
-      ~ (":" ~/ PossibleFunctionType).?)
-    .map(t => (SAst.FuncHeader(t._1.isDefined, None, t._2.map(g => g._3(g._1, g._2)), t._4), t._3.getOrElse(Seq())))
+      ~ (":" ~/ PossibleFunctionType).?
+    ).map {
+      case (returnRef, params, uses, returnValue) => (SAst.FuncHeader(returnRef.isDefined, None, params, returnValue), uses.getOrElse(Seq()))
+    }
 
-  val FunctionDefStmnt = P(FuncHeader ~ &("{") ~/ CompoundStmnt)
-    .map(t => SAst.FuncDef(t._1, t._2))
+  val FunctionDefStmnt = P(FuncHeader ~ &("{") ~/ CompoundStmnt).map {
+    case (header, body) => SAst.FuncDef(header, body)
+  }
 
-  val NamespaceDefStmnt: P[SAst.NamespaceDef] = P(
-    (NAMESPACE ~~ &(Ws) ~ QualifiedName ~ SemicolonFactory).map(t => SAst.NamespaceDef(Some(t._1), None, t._2))
-      | (NAMESPACE ~~ &(Ws) ~/ QualifiedName.? ~ CompoundStmnt).map(t => SAst.NamespaceDef(t._1, Some(t._2), None)))
+  val NamespaceDefStmnt: P[SAst.Statement] = P(
+    (NAMESPACE ~~ &(Ws) ~ QualifiedName ~ SemicolonFactory).map {
+      case (name, text) => wrap(SAst.NamespaceDef(Some(name), None), text)
+    } | (NAMESPACE ~~ &(Ws) ~/ QualifiedName.? ~ CompoundStmnt).map{
+      case (name, stmnt) => SAst.NamespaceDef(name, Some(stmnt))
+    })
 }

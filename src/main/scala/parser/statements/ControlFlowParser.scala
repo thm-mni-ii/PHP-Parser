@@ -4,16 +4,14 @@ import fastparse.noApi._
 import parser.literals.WsAPI._
 import parser.literals.Lexical.Ws
 
-import ast.{Basic => BAst}
-import ast.{Expressions => EAst}
-import ast.{Statements => SAst}
+import ast.{Basic => BAst, Expressions => EAst, Statements => SAst}
 
 import parser.literals.Keywords._
 
 import parser.Basic.{SemicolonFactory, WsExp, Semicolon}
 import parser.literals.Literals.{IntegerLiteral, Name}
 import parser.expressions.ExpressionParser.Expression
-import parser.statements.StatementParser.{EmptyStmnt, Statement, Statements}
+import parser.statements.StatementParser.{Statement, Statements, wrap}
 
 /**
   * This object contains all statements, which manipulate the sequential control flow.
@@ -33,8 +31,9 @@ object ControlFlowParser {
         ).map(t => (Seq(t._1), t._2.map(e => (e._1, Seq(e._2))), t._3.map(Seq(_)), None))
     )
 
-    P(IF ~ "(" ~/ Expression ~ ")" ~/ IfBody)
-      .map(t => SAst.IfStmnt(t._1, t._2._1, t._2._2, t._2._3, t._2._4))
+    P(IF ~ "(" ~/ Expression ~ ")" ~/ IfBody).map {
+      case (exp, (stmnts, elseifs, elseStmnts, text)) => wrap(SAst.IfStmnt(exp, stmnts, elseifs, elseStmnts), text)
+    }
   }
 
   val SwitchStmnt = {
@@ -48,11 +47,12 @@ object ControlFlowParser {
       (":" ~/ (CaseBlock | DefaultBlock).rep ~ ENDSWITCH ~ SemicolonFactory)
         | ("{" ~/ (CaseBlock | DefaultBlock).rep ~ "}").map(t => (t, None)))
 
-    P(SWITCH ~ "(" ~/ Expression ~ ")" ~/ SwitchBody)
-      .map(t => SAst.SwitchStmnt(t._1, t._2._1, t._2._2))
+    P(SWITCH ~ "(" ~/ Expression ~ ")" ~/ SwitchBody).map {
+      case (exp, (blocks, text)) => wrap(SAst.SwitchStmnt(exp, blocks), text)
+    }
   }
 
-  val SelectionStmnt: P[SAst.SelectionStmnt] = P(IfStmnt | SwitchStmnt)
+  val SelectionStmnt: P[SAst.Statement] = P(IfStmnt | SwitchStmnt)
 
 
   // iteration statements
@@ -63,13 +63,15 @@ object ControlFlowParser {
         | Statement.map(t => (Seq(t), None))
     )
 
-    P(WHILE ~ "(" ~/ Expression ~ ")" ~/ WhileBody)
-      .map(t => SAst.WhileStmnt(t._1, t._2._1, t._2._2))
+    P(WHILE ~ "(" ~/ Expression ~ ")" ~/ WhileBody).map {
+      case (exp, (stmnt, text)) => wrap(SAst.WhileStmnt(exp, stmnt), text)
+    }
   }
 
   val DoStmnt =
-    P(DO ~~ &(WsExp | Semicolon) ~/ Statement ~/ WHILE ~/ "(" ~/ Expression ~ ")" ~/ SemicolonFactory)
-      .map(t => SAst.DoStmnt(t._2, t._1, t._3))
+    P(DO ~~ &(WsExp | Semicolon) ~/ Statement ~/ WHILE ~/ "(" ~/ Expression ~ ")" ~/ SemicolonFactory).map {
+      case (stmnt, exp, text) => wrap(SAst.DoStmnt(exp, stmnt), text)
+    }
 
   val ForStmnt = {
     val ForBody: P[(Seq[SAst.Statement], Option[BAst.Text])] = P(
@@ -80,8 +82,9 @@ object ControlFlowParser {
     val ForExpressionList = P(Expression.rep(sep = ",".~/) ~ SemicolonFactory)
       .map(t => SAst.ForExpressionList(t._1, t._2))
 
-    P(FOR ~ "(" ~/ ForExpressionList ~/ ForExpressionList ~/ Expression.rep(sep = ",".~/) ~ ")" ~/ ForBody)
-      .map(t => SAst.ForStmnt(t._1, t._2, SAst.ForExpressionList(t._3, None), t._4._1, t._4._2))
+    P(FOR ~ "(" ~/ ForExpressionList ~/ ForExpressionList ~/ Expression.rep(sep = ",".~/) ~ ")" ~/ ForBody).map {
+      case (init, control, exps, (body, text)) => wrap(SAst.ForStmnt(init, control, SAst.ForExpressionList(exps, None), body), text)
+    }
   }
 
   val ForeachStmnt = {
@@ -95,18 +98,20 @@ object ControlFlowParser {
       (Expression ~ ("=>" ~ "&".!.? ~ Expression).?)
         .map(t => if (t._2.isDefined) (Some(t._1), t._2.get._1.isDefined, t._2.get._2) else (None, false, t._1))
       ) ~ ")" ~/ ForeachBody
-    ).map(t => SAst.ForeachStmnt(t._1, t._2._1, t._2._2, t._2._3, t._3._1, t._3._2))
+    ).map {
+      case (exp, (key, valueDesVar, value), (body, text)) => wrap(SAst.ForeachStmnt(exp, key, valueDesVar, value, body), text)
+    }
   }
 
-  val IterationStmnt: P[SAst.IterationStmnt] = P(WhileStmnt | DoStmnt | ForeachStmnt | ForStmnt)
+  val IterationStmnt: P[SAst.Statement] = P(WhileStmnt | DoStmnt | ForeachStmnt | ForStmnt)
 
 
   // jump statements
 
-  val JumpStmnt: P[SAst.JumpStmnt] = P(
-    (GOTO ~/ Name ~ SemicolonFactory).map(t => SAst.GotoStmnt(t._1, t._2))
-      | (CONTINUE ~~ &(Ws | Semicolon) ~/ IntegerLiteral.? ~ SemicolonFactory).map(t => SAst.ContinueStmnt(t._1, t._2))
-      | (BREAK ~~ &(Ws | Semicolon) ~/ IntegerLiteral.? ~ SemicolonFactory).map(t => SAst.BreakStmnt(t._1, t._2))
-      | (RETURN ~~ &(WsExp | Semicolon) ~/ Expression.? ~ SemicolonFactory).map(t => SAst.ReturnStmnt(t._1, t._2))
-      | (THROW ~~ &(WsExp) ~/ Expression ~ SemicolonFactory).map(t => SAst.ThrowStmnt(t._1, t._2)))
+  val JumpStmnt: P[SAst.Statement] = P(
+    (GOTO ~/ Name ~ SemicolonFactory).map(t => wrap(SAst.GotoStmnt(t._1), t._2))
+      | (CONTINUE ~~ &(Ws | Semicolon) ~/ IntegerLiteral.? ~ SemicolonFactory).map(t => wrap(SAst.ContinueStmnt(t._1), t._2))
+      | (BREAK ~~ &(Ws | Semicolon) ~/ IntegerLiteral.? ~ SemicolonFactory).map(t => wrap(SAst.BreakStmnt(t._1), t._2))
+      | (RETURN ~~ &(WsExp | Semicolon) ~/ Expression.? ~ SemicolonFactory).map(t => wrap(SAst.ReturnStmnt(t._1), t._2))
+      | (THROW ~~ &(WsExp) ~/ Expression ~ SemicolonFactory).map(t => wrap(SAst.ThrowStmnt(t._1), t._2)))
 }
