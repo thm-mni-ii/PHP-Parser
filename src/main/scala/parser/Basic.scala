@@ -29,13 +29,14 @@ object Basic {
 
   val SemicolonFactory : P[Option[BAst.Text]] =
     P((";".!.map(_ => None) ~ !EchoStartTag) | ("?>" ~~ Text ~~ ((NormalStartTag ~~ !EchoStartTag) | EchoStartTag | End)).map(t => Some(t._1)))
+      .opaque("\";\" | \"?>\"")
 
   val QualifiedName : P[BAst.QualifiedName] = P((NAMESPACE ~ "\\" ~ (Name ~ "\\").rep ~ Name).map {
     case (path, name) => BAst.QualifiedName(BAst.NamespaceType.LOCAL, path, name)
   } | ("\\".!.? ~ (Name ~ "\\").rep ~ Name).map {
     case (Some(_), path, name) => BAst.QualifiedName(BAst.NamespaceType.GLOBAL, path, name)
     case (None, path, name) =>  BAst.QualifiedName(BAst.NamespaceType.RELATIVE, path, name)
-  })
+  }).opaque("QualifiedName")
 
   val NamespaceName: P[Seq[BAst.Name]] = P(Name.rep(min = 0, sep = "\\"))
 }
