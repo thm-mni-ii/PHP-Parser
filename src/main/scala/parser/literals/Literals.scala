@@ -21,7 +21,7 @@ object Literals {
   val NameWithKeyword : P[ast.Basic.Name] = P(NonDigit ~ (NonDigit | Digit).rep).map(t => ast.Basic.Name(t._1 + t._2.mkString))
   val Name : P[BAst.Name] = P(!Keyword ~ NameWithKeyword)
 
-  val Keyword = P(StringInIgnoreCase(AllKeywords:_*) ~ !NonDigit)
+  val Keyword = P(StringInIgnoreCase(AllKeywords:_*) ~ !(NonDigit | Digit))
 
   val VariableName : P[SimpleNameVar] = P("$" ~ NameWithKeyword).map(SimpleNameVar)
 

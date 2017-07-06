@@ -35,7 +35,7 @@ object ExpressionParser {
 
   val ListIntrinsic = P(
     LIST ~ "(" ~/ (
-      (",".rep ~ NoCut(Expression).rep(sep=",".rep(1))).map(Left(_))
+      (",".rep ~ NoCut(Expression).rep(sep=",".rep(1)) ~ ",".rep).map(Left(_))
         | ((Expression ~ "=>" ~ Expression).rep(sep=",") ~ ",".?).map(Right(_)))
       ~ ")").map(EAst.ListIntrinsic)
   val EchoIntrinsic = P(ECHO ~~ &(WsExp) ~/ Expression.rep(min=1, sep=",")).map(EAst.EchoIntrinsic)
@@ -58,7 +58,7 @@ object ExpressionParser {
 
   val ArgumentExpressionList : P[Seq[EAst.ArgumentExpression]] = {
     val ArgumentExp = P(
-      "...".!.? ~ CondExp).map(t => EAst.ArgumentExpression(t._1.isDefined, t._2))
+      "...".!.? ~ (CondExp | SingleExpression)).map(t => EAst.ArgumentExpression(t._1.isDefined, t._2))
 
     P(ArgumentExp.rep(sep=","))
   }

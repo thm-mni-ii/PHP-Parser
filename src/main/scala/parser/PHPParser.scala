@@ -19,7 +19,7 @@ object PHPParser {
              |  expected: ${extra.traced.expected}
              |  got: "...${extra.input.slice(index, index + 20)}"
           """.stripMargin
-        val framePrint = extra.traced.stack.reverse.map { case Frame(index, p) => s"  while trying to parse '${p}' at ${extra.input.repr.prettyIndex(extra.input, index)}\n" }.mkString
+        val framePrint = extra.traced.fullStack.reverse.map { case Frame(index, p) => s"  while trying to parse '${p}' at ${extra.input.repr.prettyIndex(extra.input, index)}\n" }.mkString
         val fullMsg =
           s"""
              |${msg}

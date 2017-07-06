@@ -93,7 +93,7 @@ object DeclarationParser {
       case (varName, exp) => SAst.PropertyElement(varName, exp)
     }
 
-    P(PropertyMod ~~ &(Ws) ~ propertyElem.rep ~ SemicolonFactory).map {
+    P(PropertyMod ~~ &(Ws) ~ propertyElem.rep(sep=",") ~ SemicolonFactory).map {
       case (mod, pElems, text) => wrapMemberDecl(SAst.PropertyDecl(mod, pElems), text)
     }
   }
