@@ -1,4 +1,4 @@
-package parser.literals
+package phpparser.parser.literals
 
 import fastparse.all._
 import fastparse.all.{IgnoreCase => I}

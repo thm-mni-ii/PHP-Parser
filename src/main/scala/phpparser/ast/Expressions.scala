@@ -1,7 +1,7 @@
-package ast
+package phpparser.ast
 
-import ast.Basic._
-import ast.Statements.{ClassDecl, CompoundStmnt, FuncHeader}
+import phpparser.ast.Basic._
+import phpparser.ast.Statements.{ClassDecl, CompoundStmnt, FuncHeader}
 
 object Expressions {
 

@@ -1,13 +1,13 @@
-package parser
+package phpparser
 
-import ast.Basic.Script
 import fastparse.all._
 import fastparse.core.Frame
+import phpparser.ast.Basic.Script
 
 object PHPParser {
 
   def parse(toParse: String) = {
-    val result = parser.Basic.Script.parse(toParse)
+    val result = phpparser.parser.Basic.Script.parse(toParse)
     result match {
       case Parsed.Success(value, currentIndex) => {
         PHPParser.Success(value)

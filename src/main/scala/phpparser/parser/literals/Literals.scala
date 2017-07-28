@@ -1,14 +1,14 @@
-package parser.literals
+package phpparser.parser.literals
 
-import ast.{Basic => BAst}
-import ast.Expressions.SimpleNameVar
+import phpparser.ast.{Basic => BAst}
+import phpparser.ast.Expressions.SimpleNameVar
 
 import fastparse.all._
 
-import parser.literals.Keywords.AllKeywords
-import parser.literals.Lexical.{Whitespace, WsChars, Newline}
-import parser.expressions.ExpressionParser.{Expression}
-import parser.expressions.VariableParser.Variable
+import phpparser.parser.literals.Keywords.AllKeywords
+import phpparser.parser.literals.Lexical.{Whitespace, WsChars, Newline}
+import phpparser.parser.expressions.ExpressionParser.{Expression}
+import phpparser.parser.expressions.VariableParser.Variable
 
 /**
   * Created by tobias on 27.05.17.
@@ -18,7 +18,7 @@ object Literals {
   val NonDigitSeq = ('a' to 'z') ++ ('A' to 'Z') ++ ('\u0080' to '\u00ff') :+ '_'
   val NonDigit = P(CharIn(NonDigitSeq).!)
 
-  val NameWithKeyword : P[ast.Basic.Name] = P(NonDigit ~ (NonDigit | Digit).rep).map(t => ast.Basic.Name(t._1 + t._2.mkString))
+  val NameWithKeyword : P[BAst.Name] = P(NonDigit ~ (NonDigit | Digit).rep).map(t => BAst.Name(t._1 + t._2.mkString))
   val Name : P[BAst.Name] = P(!Keyword ~ NameWithKeyword)
 
   val Keyword = P(StringInIgnoreCase(AllKeywords:_*) ~ !(NonDigit | Digit))

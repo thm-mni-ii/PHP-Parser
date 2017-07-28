@@ -1,18 +1,18 @@
-package parser.expressions
+package phpparser.parser.expressions
 
 import fastparse.noApi._
-import parser.literals.WsAPI._
-import parser.literals.Lexical.Ws
+import phpparser.parser.literals.WsAPI._
+import phpparser.parser.literals.Lexical.Ws
 
-import ast.{Expressions => EAst}
+import phpparser.ast.{Expressions => EAst}
 
-import parser.literals.Keywords._
-import parser.literals.Literals._
+import phpparser.parser.literals.Keywords._
+import phpparser.parser.literals.Literals._
 
-import parser.Basic.WsExp
-import parser.statements.StatementParser.{CompoundStmnt, AnonymousFuncHeader}
-import parser.expressions.OperatorParser.{LogicalOrExpr2, CondExp}
-import parser.expressions.VariableParser.{ArrayElement, Variable}
+import phpparser.parser.Basic.WsExp
+import phpparser.parser.statements.StatementParser.{CompoundStmnt, AnonymousFuncHeader}
+import phpparser.parser.expressions.OperatorParser.{LogicalOrExpr2, CondExp}
+import phpparser.parser.expressions.VariableParser.{ArrayElement, Variable}
 
 
 object ExpressionParser {

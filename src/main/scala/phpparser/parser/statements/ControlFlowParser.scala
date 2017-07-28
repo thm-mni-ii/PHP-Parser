@@ -1,17 +1,17 @@
-package parser.statements
+package phpparser.parser.statements
 
 import fastparse.noApi._
-import parser.literals.WsAPI._
-import parser.literals.Lexical.Ws
+import phpparser.parser.literals.WsAPI._
+import phpparser.parser.literals.Lexical.Ws
 
-import ast.{Basic => BAst, Expressions => EAst, Statements => SAst}
+import phpparser.ast.{Basic => BAst, Expressions => EAst, Statements => SAst}
 
-import parser.literals.Keywords._
+import phpparser.parser.literals.Keywords._
 
-import parser.Basic.{SemicolonFactory, WsExp, Semicolon}
-import parser.literals.Literals.{IntegerLiteral, Name}
-import parser.expressions.ExpressionParser.Expression
-import parser.statements.StatementParser.{Statement, Statements, wrap}
+import phpparser.parser.Basic.{SemicolonFactory, WsExp, Semicolon}
+import phpparser.parser.literals.Literals.{IntegerLiteral, Name}
+import phpparser.parser.expressions.ExpressionParser.Expression
+import phpparser.parser.statements.StatementParser.{Statement, Statements, wrap}
 
 /**
   * This object contains all statements, which manipulate the sequential control flow.
@@ -21,7 +21,7 @@ object ControlFlowParser {
   // selection statements
 
   val IfStmnt = {
-    val IfBody: P[(Seq[ast.Statements.Statement], Seq[(EAst.Expression, Seq[SAst.Statement])], Option[Seq[SAst.Statement]], Option[BAst.Text])] = P((
+    val IfBody: P[(Seq[phpparser.ast.Statements.Statement], Seq[(EAst.Expression, Seq[SAst.Statement])], Option[Seq[SAst.Statement]], Option[BAst.Text])] = P((
       ":" ~/ Statements
         ~ (ELSEIF ~ "(" ~/ Expression ~ ")" ~/ ":" ~/ Statements).rep
         ~ (ELSE ~ ":" ~/ Statements).? ~ ENDIF ~/ SemicolonFactory) |

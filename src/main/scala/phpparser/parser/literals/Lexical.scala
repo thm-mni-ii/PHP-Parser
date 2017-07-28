@@ -1,4 +1,4 @@
-package parser.literals
+package phpparser.parser.literals
 
 object Lexical {
   import fastparse.all._

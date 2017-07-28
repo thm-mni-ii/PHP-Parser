@@ -1,15 +1,15 @@
-package parser
+package phpparser.parser
 
 import fastparse.noApi._
-import parser.literals.WsAPI._
-import parser.literals.Lexical.Ws
+import phpparser.parser.literals.WsAPI._
+import phpparser.parser.literals.Lexical.Ws
 
-import parser.literals.Keywords.{PHP, NAMESPACE}
-import parser.literals.Literals.Name
+import phpparser.parser.literals.Keywords.{PHP, NAMESPACE}
+import phpparser.parser.literals.Literals.Name
 
-import ast.{Basic => BAst}
+import phpparser.ast.{Basic => BAst}
 
-import parser.statements.StatementParser.AvailableStatement
+import phpparser.parser.statements.StatementParser.AvailableStatement
 
 object Basic {
 

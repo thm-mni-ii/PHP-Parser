@@ -1,19 +1,19 @@
-package parser.statements
+package phpparser.parser.statements
 
 import fastparse.noApi._
-import parser.literals.WsAPI._
-import parser.literals.Lexical.Ws
+import phpparser.parser.literals.WsAPI._
+import phpparser.parser.literals.Lexical.Ws
 
-import ast.{Basic => BAst, Expressions => EAst, Statements => SAst}
+import phpparser.ast.{Basic => BAst, Expressions => EAst, Statements => SAst}
 
-import parser.literals.KeywordConversions._
-import parser.literals.Keywords._
-import parser.literals.Literals._
+import phpparser.parser.literals.KeywordConversions._
+import phpparser.parser.literals.Keywords._
+import phpparser.parser.literals.Literals._
 
-import parser.Basic.{EchoStartTag, QualifiedName, SemicolonFactory}
-import parser.expressions.ExpressionParser.Expression
-import parser.statements.ControlFlowParser._
-import parser.statements.DeclarationParser._
+import phpparser.parser.Basic.{EchoStartTag, QualifiedName, SemicolonFactory}
+import phpparser.parser.expressions.ExpressionParser.Expression
+import phpparser.parser.statements.ControlFlowParser._
+import phpparser.parser.statements.DeclarationParser._
 
 /**
   * This object contains all basic statements

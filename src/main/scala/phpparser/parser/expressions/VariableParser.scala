@@ -1,16 +1,16 @@
-package parser.expressions
+package phpparser.parser.expressions
 
 import fastparse.noApi._
-import parser.literals.WsAPI._
+import phpparser.parser.literals.WsAPI._
 
-import ast.{Expressions => EAst}
+import phpparser.ast.{Expressions => EAst}
 
-import parser.literals.Keywords._
-import parser.literals.KeywordConversions._
-import parser.literals.Literals._
+import phpparser.parser.literals.Keywords._
+import phpparser.parser.literals.KeywordConversions._
+import phpparser.parser.literals.Literals._
 
-import parser.Basic._
-import parser.expressions.ExpressionParser.{Expression, ArgumentExpressionList}
+import phpparser.parser.Basic._
+import phpparser.parser.expressions.ExpressionParser.{Expression, ArgumentExpressionList}
 
 
 /**

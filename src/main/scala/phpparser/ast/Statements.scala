@@ -1,7 +1,7 @@
-package ast
+package phpparser.ast
 
-import ast.Basic._
-import ast.Expressions.{Expression, SimpleNameVar, SimpleVar}
+import phpparser.ast.Basic._
+import phpparser.ast.Expressions.{Expression, SimpleNameVar, SimpleVar}
 
 object Statements {
 

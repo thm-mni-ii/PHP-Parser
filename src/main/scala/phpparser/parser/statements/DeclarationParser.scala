@@ -1,18 +1,18 @@
-package parser.statements
+package phpparser.parser.statements
 
 import fastparse.noApi._
-import parser.literals.WsAPI._
-import parser.literals.Lexical.Ws
+import phpparser.parser.literals.WsAPI._
+import phpparser.parser.literals.Lexical.Ws
 
-import ast.{Basic => BAst, Statements => SAst}
-import parser.literals.KeywordConversions._
-import parser.literals.Keywords._
-import parser.literals.Literals.{Name, VariableName}
+import phpparser.ast.{Basic => BAst, Statements => SAst}
+import phpparser.parser.literals.KeywordConversions._
+import phpparser.parser.literals.Keywords._
+import phpparser.parser.literals.Literals.{Name, VariableName}
 
-import parser.Basic.{NamespaceName, QualifiedName, SemicolonFactory}
-import parser.expressions.ExpressionParser.Expression
-import parser.expressions.VariableParser.SimpleVariable
-import parser.statements.StatementParser.{CompoundStmnt, FuncHeader, wrap}
+import phpparser.parser.Basic.{NamespaceName, QualifiedName, SemicolonFactory}
+import phpparser.parser.expressions.ExpressionParser.Expression
+import phpparser.parser.expressions.VariableParser.SimpleVariable
+import phpparser.parser.statements.StatementParser.{CompoundStmnt, FuncHeader, wrap}
 
 
 /**
