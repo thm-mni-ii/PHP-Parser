@@ -109,7 +109,7 @@ object ControlFlowParser {
   // jump statements
 
   val JumpStmnt: P[SAst.Statement] = P(
-    (GOTO ~/ Name ~ SemicolonFactory).map(t => wrap(SAst.GotoStmnt(t._1), t._2))
+    (GOTO ~~ Ws ~/ Name ~ SemicolonFactory).map(t => wrap(SAst.GotoStmnt(t._1), t._2))
       | (CONTINUE ~~ &(Ws | Semicolon) ~/ IntegerLiteral.? ~ SemicolonFactory).map(t => wrap(SAst.ContinueStmnt(t._1), t._2))
       | (BREAK ~~ &(Ws | Semicolon) ~/ IntegerLiteral.? ~ SemicolonFactory).map(t => wrap(SAst.BreakStmnt(t._1), t._2))
       | (RETURN ~~ &(WsExp | Semicolon) ~/ Expression.? ~ SemicolonFactory).map(t => wrap(SAst.ReturnStmnt(t._1), t._2))
