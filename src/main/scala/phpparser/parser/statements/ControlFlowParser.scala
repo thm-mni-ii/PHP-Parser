@@ -69,7 +69,7 @@ object ControlFlowParser {
   }
 
   val DoStmnt =
-    P(DO ~~ &(WsExp | Semicolon) ~/ Statement ~/ WHILE ~/ "(" ~/ Expression ~ ")" ~/ SemicolonFactory).map {
+    P(DO ~~ &(WsExp | Semicolon | "{") ~/ Statement ~/ WHILE ~/ "(" ~/ Expression ~ ")" ~/ SemicolonFactory).map {
       case (stmnt, exp, text) => wrap(SAst.DoStmnt(exp, stmnt), text)
     }
 
