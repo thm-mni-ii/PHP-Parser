@@ -1,7 +1,7 @@
-package phpparser.ast
+package de.thm.ii.phpparser.ast
 
-import phpparser.ast.Basic._
-import phpparser.ast.Statements.{ClassDecl, CompoundStmnt, FuncHeader}
+import de.thm.ii.phpparser.ast.Basic._
+import de.thm.ii.phpparser.ast.Statements.{ClassDecl, CompoundStmnt, FuncHeader}
 
 object Expressions {
 

@@ -21,7 +21,7 @@ $ sbt publishLocal
 After that you need to include this line to your 'build.sbt' file.
 
 ```scala
-libraryDependencies += "de.thm.mni" %% "ScalaPHPParser" % "1.0"
+libraryDependencies += "de.thm.ii" %% "ScalaPHPParser" % "1.0"
 ```
 
 ## Usage
@@ -30,7 +30,7 @@ This simple example presents the basic usage of the parser in Scala.
 
 ```scala
 object Main extends App {
-  import phpparser.PHPParser
+  import de.thm.ii.phpparser.PHPParser
 
   PHPParser.parse("<?php $value = 5;") match {
     case s: PHPParser.Success => println(s.script)
@@ -50,7 +50,7 @@ If you want to parse an specific element of the programing language, you can cal
 ```
 .
 ├── ...
-├── src/main/scala/phpparser
+├── src/main/scala/de/thm/ii/phpparser
 │   ├── PHPParser.scala    # top-level parser
 │   ├── ast/               # case classes of abstract syntax tree
 │   └── parser/            # specific parsers for all different elements

@@ -1,14 +1,14 @@
-package phpparser.parser.literals
+package de.thm.ii.phpparser.parser.literals
 
-import phpparser.ast.{Basic => BAst}
-import phpparser.ast.Expressions.SimpleNameVar
+import de.thm.ii.phpparser.ast.{Basic => BAst}
+import de.thm.ii.phpparser.ast.Expressions.SimpleNameVar
 
 import fastparse.all._
 
-import phpparser.parser.literals.Keywords.AllKeywords
-import phpparser.parser.literals.Lexical.{Whitespace, WsChars, Newline}
-import phpparser.parser.expressions.ExpressionParser.{Expression}
-import phpparser.parser.expressions.VariableParser.Variable
+import de.thm.ii.phpparser.parser.literals.Keywords.AllKeywords
+import de.thm.ii.phpparser.parser.literals.Lexical.{Whitespace, WsChars, Newline}
+import de.thm.ii.phpparser.parser.expressions.ExpressionParser.{Expression}
+import de.thm.ii.phpparser.parser.expressions.VariableParser.Variable
 
 /**
   * Created by tobias on 27.05.17.

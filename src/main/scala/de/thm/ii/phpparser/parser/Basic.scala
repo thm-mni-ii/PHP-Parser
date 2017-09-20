@@ -1,15 +1,15 @@
-package phpparser.parser
+package de.thm.ii.phpparser.parser
 
 import fastparse.noApi._
-import phpparser.parser.literals.WsAPI._
-import phpparser.parser.literals.Lexical.Ws
+import de.thm.ii.phpparser.parser.literals.WsAPI._
+import de.thm.ii.phpparser.parser.literals.Lexical.Ws
 
-import phpparser.parser.literals.Keywords.{PHP, NAMESPACE}
-import phpparser.parser.literals.Literals.Name
+import de.thm.ii.phpparser.parser.literals.Keywords.{PHP, NAMESPACE}
+import de.thm.ii.phpparser.parser.literals.Literals.Name
 
-import phpparser.ast.{Basic => BAst}
+import de.thm.ii.phpparser.ast.{Basic => BAst}
 
-import phpparser.parser.statements.StatementParser.AvailableStatement
+import de.thm.ii.phpparser.parser.statements.StatementParser.AvailableStatement
 
 object Basic {
 

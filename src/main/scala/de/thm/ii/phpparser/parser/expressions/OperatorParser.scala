@@ -1,20 +1,20 @@
-package phpparser.parser.expressions
+package de.thm.ii.phpparser.parser.expressions
 
 import fastparse.noApi._
-import phpparser.parser.literals.WsAPI._
-import phpparser.parser.literals.Lexical.Ws
+import de.thm.ii.phpparser.parser.literals.WsAPI._
+import de.thm.ii.phpparser.parser.literals.Lexical.Ws
 
-import phpparser.ast.{Expressions => EAst}
-import phpparser.ast.Statements.ClassDecl
+import de.thm.ii.phpparser.ast.{Expressions => EAst}
+import de.thm.ii.phpparser.ast.Statements.ClassDecl
 
-import phpparser.parser.literals.Keywords._
-import phpparser.parser.literals.KeywordConversions._
-import phpparser.parser.literals.Literals._
+import de.thm.ii.phpparser.parser.literals.Keywords._
+import de.thm.ii.phpparser.parser.literals.KeywordConversions._
+import de.thm.ii.phpparser.parser.literals.Literals._
 
-import phpparser.parser.Basic._
-import phpparser.parser.statements.DeclarationParser.ClassDeclBody
-import phpparser.parser.expressions.VariableParser.Variable
-import phpparser.parser.expressions.ExpressionParser.{Expression, ArgumentExpressionList, ListIntrinsic, PrimaryExpWithoutVariable, CloneExp, SingleExpression}
+import de.thm.ii.phpparser.parser.Basic._
+import de.thm.ii.phpparser.parser.statements.DeclarationParser.ClassDeclBody
+import de.thm.ii.phpparser.parser.expressions.VariableParser.Variable
+import de.thm.ii.phpparser.parser.expressions.ExpressionParser.{Expression, ArgumentExpressionList, ListIntrinsic, PrimaryExpWithoutVariable, CloneExp, SingleExpression}
 
 /**
   * Created by tobias on 02.06.17.

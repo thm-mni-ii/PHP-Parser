@@ -1,18 +1,18 @@
-package phpparser.parser.statements
+package de.thm.ii.phpparser.parser.statements
 
 import fastparse.noApi._
-import phpparser.parser.literals.WsAPI._
-import phpparser.parser.literals.Lexical.Ws
+import de.thm.ii.phpparser.parser.literals.WsAPI._
+import de.thm.ii.phpparser.parser.literals.Lexical.Ws
 
-import phpparser.ast.{Basic => BAst, Statements => SAst}
-import phpparser.parser.literals.KeywordConversions._
-import phpparser.parser.literals.Keywords._
-import phpparser.parser.literals.Literals.{Name, VariableName}
+import de.thm.ii.phpparser.ast.{Basic => BAst, Statements => SAst}
+import de.thm.ii.phpparser.parser.literals.KeywordConversions._
+import de.thm.ii.phpparser.parser.literals.Keywords._
+import de.thm.ii.phpparser.parser.literals.Literals.{Name, VariableName}
 
-import phpparser.parser.Basic.{NamespaceName, QualifiedName, SemicolonFactory}
-import phpparser.parser.expressions.ExpressionParser.Expression
-import phpparser.parser.expressions.VariableParser.SimpleVariable
-import phpparser.parser.statements.StatementParser.{CompoundStmnt, FuncHeader, wrap}
+import de.thm.ii.phpparser.parser.Basic.{NamespaceName, QualifiedName, SemicolonFactory}
+import de.thm.ii.phpparser.parser.expressions.ExpressionParser.Expression
+import de.thm.ii.phpparser.parser.expressions.VariableParser.SimpleVariable
+import de.thm.ii.phpparser.parser.statements.StatementParser.{CompoundStmnt, FuncHeader, wrap}
 
 
 /**

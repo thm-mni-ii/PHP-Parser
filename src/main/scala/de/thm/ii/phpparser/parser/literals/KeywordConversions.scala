@@ -1,8 +1,8 @@
-package phpparser.parser.literals
+package de.thm.ii.phpparser.parser.literals
 
-import phpparser.ast.{Expressions => EAst, Statements => SAst}
+import de.thm.ii.phpparser.ast.{Expressions => EAst, Statements => SAst}
 import fastparse.all._
-import phpparser.parser.literals.Keywords._
+import de.thm.ii.phpparser.parser.literals.Keywords._
 
 /**
   * Created by tobias on 27.05.17.

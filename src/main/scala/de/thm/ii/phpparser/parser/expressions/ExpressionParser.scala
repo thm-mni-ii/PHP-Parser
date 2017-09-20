@@ -1,18 +1,18 @@
-package phpparser.parser.expressions
+package de.thm.ii.phpparser.parser.expressions
 
 import fastparse.noApi._
-import phpparser.parser.literals.WsAPI._
-import phpparser.parser.literals.Lexical.Ws
+import de.thm.ii.phpparser.parser.literals.WsAPI._
+import de.thm.ii.phpparser.parser.literals.Lexical.Ws
 
-import phpparser.ast.{Expressions => EAst}
+import de.thm.ii.phpparser.ast.{Expressions => EAst}
 
-import phpparser.parser.literals.Keywords._
-import phpparser.parser.literals.Literals._
+import de.thm.ii.phpparser.parser.literals.Keywords._
+import de.thm.ii.phpparser.parser.literals.Literals._
 
-import phpparser.parser.Basic.WsExp
-import phpparser.parser.statements.StatementParser.{CompoundStmnt, AnonymousFuncHeader}
-import phpparser.parser.expressions.OperatorParser.{LogicalOrExpr2, CondExp}
-import phpparser.parser.expressions.VariableParser.{ArrayElement, Variable}
+import de.thm.ii.phpparser.parser.Basic.WsExp
+import de.thm.ii.phpparser.parser.statements.StatementParser.{CompoundStmnt, AnonymousFuncHeader}
+import de.thm.ii.phpparser.parser.expressions.OperatorParser.{LogicalOrExpr2, CondExp}
+import de.thm.ii.phpparser.parser.expressions.VariableParser.{ArrayElement, Variable}
 
 
 object ExpressionParser {

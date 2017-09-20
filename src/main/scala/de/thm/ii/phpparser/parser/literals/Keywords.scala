@@ -1,4 +1,4 @@
-package phpparser.parser.literals
+package de.thm.ii.phpparser.parser.literals
 
 import fastparse.all._
 import fastparse.all.{IgnoreCase => I}
