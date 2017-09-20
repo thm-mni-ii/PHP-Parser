@@ -1,7 +1,7 @@
-# Scala-PHP-Parser [![Build Status](https://travis-ci.org/icampus/Scala-PHP-Parser.svg?branch=master)](https://travis-ci.org/icampus/Scala-PHP-Parser)
-This project contains an PHP-Parser based on the current [php language specification](https://github.com/php/php-langspec).
+# PHP-Parser [![Build Status](https://travis-ci.org/icampus/Scala-PHP-Parser.svg?branch=master)](https://travis-ci.org/icampus/Scala-PHP-Parser)
+This project contains an PHP-Parser based on the current [php language specification](https://github.com/php/php-langspec). It supports PHP version 7.
 
-This project is written in Scala and can be used in Java and Scala. Based on [FastParse](https://github.com/lihaoyi/fastparse) it transforms an valid PHP-String into an abstract syntax tree.
+This project is written in Scala and can be used in **Java** and **Scala**. Based on [FastParse](https://github.com/lihaoyi/fastparse) it transforms an valid PHP-String into an abstract syntax tree.
 
 ## Getting Started
 
