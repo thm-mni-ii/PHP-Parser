@@ -31,7 +31,7 @@ $ sbt publishLocal
 After that you need to include this line to your 'build.sbt' file.
 
 ```scala
-libraryDependencies += "de.thm.ii" %% "ScalaPHPParser" % "1.0"
+libraryDependencies += "de.thm.ii" %% "PHPParser" % "1.0"
 ```
 
 ## Usage

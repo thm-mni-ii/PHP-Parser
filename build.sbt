@@ -1,4 +1,4 @@
-name := "ScalaPHPParser"
+name := "PHPParser"
 
 version := "1.0"
 
