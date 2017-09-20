@@ -5,12 +5,22 @@ This project is written in Scala and can be used in Java and Scala. Based on [Fa
 
 ## Getting Started
 
-There are different ways to include this library into your own project.
+There are different ways to include this library to your own projects. The following parts explain some methods to include them in Java and Scala. Currently you have to clone the repository to your local system and build the jar-file. Maven-support is planned for the future. 
 
-Currently you have to clone the repository to your local system. The following sbt-command builds an jar-File, which you need to include in your project.
+#### Java
+
+At first you need to build a standalone jar-library with all dependencies including the core scala-library. The following sbt-command creates such a jar-file. 
 
 ```console
-$ sbt build
+$ sbt assembly
+```
+
+#### Scala
+
+The previous command works in Scala, too. Nevertheless a jar-file with all dependencies is not necessary, if sbt can load these separately. To build a jar-file without dependencies, you need to execute the following command.
+
+```console
+$ sbt package
 ```
 
 Another possible way is to publish the project to your local Ivy repository.
@@ -26,8 +36,28 @@ libraryDependencies += "de.thm.ii" %% "ScalaPHPParser" % "1.0"
 
 ## Usage
 
-This simple example presents the basic usage of the parser in Scala.
+These simple examples present the basic usage of the parser.
 
+#### Java
+```java
+import de.thm.ii.phpparser.PHPParser;
+import de.thm.ii.phpparser.ast.Basic;
+
+public class Main {
+    public static void main(String[] args) {
+        PHPParser.Result res = (PHPParser.Result) PHPParser.parse("<?php $value = 5;");
+        if (res instanceof PHPParser.Success) {
+            Basic.Script s = ((PHPParser.Success) res).script();
+            System.out.println(s);
+        } else if (res instanceof PHPParser.Failure) {
+            String msg = ((PHPParser.Failure) res).fullMsg();
+            System.out.println(msg);
+        }
+    }
+}
+```
+
+#### Scala
 ```scala
 object Main extends App {
   import de.thm.ii.phpparser.PHPParser
