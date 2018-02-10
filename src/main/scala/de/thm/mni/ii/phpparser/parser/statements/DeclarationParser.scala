@@ -1,18 +1,18 @@
-package de.thm.ii.phpparser.parser.statements
+package de.thm.mni.ii.phpparser.parser.statements
 
 import fastparse.noApi._
-import de.thm.ii.phpparser.parser.literals.WsAPI._
-import de.thm.ii.phpparser.parser.literals.Lexical.Ws
+import de.thm.mni.ii.phpparser.parser.literals.WsAPI._
+import de.thm.mni.ii.phpparser.parser.literals.Lexical.Ws
 
-import de.thm.ii.phpparser.ast.{Basic => BAst, Statements => SAst}
-import de.thm.ii.phpparser.parser.literals.KeywordConversions._
-import de.thm.ii.phpparser.parser.literals.Keywords._
-import de.thm.ii.phpparser.parser.literals.Literals.{Name, VariableName}
+import de.thm.mni.ii.phpparser.ast.{Basic => BAst, Statements => SAst}
+import de.thm.mni.ii.phpparser.parser.literals.KeywordConversions._
+import de.thm.mni.ii.phpparser.parser.literals.Keywords._
+import de.thm.mni.ii.phpparser.parser.literals.Literals.{Name, VariableName}
 
-import de.thm.ii.phpparser.parser.Basic.{NamespaceName, QualifiedName, SemicolonFactory}
-import de.thm.ii.phpparser.parser.expressions.ExpressionParser.Expression
-import de.thm.ii.phpparser.parser.expressions.VariableParser.SimpleVariable
-import de.thm.ii.phpparser.parser.statements.StatementParser.{CompoundStmnt, FuncHeader, wrap}
+import de.thm.mni.ii.phpparser.parser.Basic.{NamespaceName, QualifiedName, SemicolonFactory}
+import de.thm.mni.ii.phpparser.parser.expressions.ExpressionParser.Expression
+import de.thm.mni.ii.phpparser.parser.expressions.VariableParser.SimpleVariable
+import de.thm.mni.ii.phpparser.parser.statements.StatementParser.{CompoundStmnt, FuncHeader, wrap}
 
 
 /**

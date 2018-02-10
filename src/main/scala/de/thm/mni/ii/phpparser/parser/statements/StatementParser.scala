@@ -1,19 +1,19 @@
-package de.thm.ii.phpparser.parser.statements
+package de.thm.mni.ii.phpparser.parser.statements
 
 import fastparse.noApi._
-import de.thm.ii.phpparser.parser.literals.WsAPI._
-import de.thm.ii.phpparser.parser.literals.Lexical.Ws
+import de.thm.mni.ii.phpparser.parser.literals.WsAPI._
+import de.thm.mni.ii.phpparser.parser.literals.Lexical.Ws
 
-import de.thm.ii.phpparser.ast.{Basic => BAst, Expressions => EAst, Statements => SAst}
+import de.thm.mni.ii.phpparser.ast.{Basic => BAst, Expressions => EAst, Statements => SAst}
 
-import de.thm.ii.phpparser.parser.literals.KeywordConversions._
-import de.thm.ii.phpparser.parser.literals.Keywords._
-import de.thm.ii.phpparser.parser.literals.Literals._
+import de.thm.mni.ii.phpparser.parser.literals.KeywordConversions._
+import de.thm.mni.ii.phpparser.parser.literals.Keywords._
+import de.thm.mni.ii.phpparser.parser.literals.Literals._
 
-import de.thm.ii.phpparser.parser.Basic.{EchoStartTag, QualifiedName, SemicolonFactory}
-import de.thm.ii.phpparser.parser.expressions.ExpressionParser.Expression
-import de.thm.ii.phpparser.parser.statements.ControlFlowParser._
-import de.thm.ii.phpparser.parser.statements.DeclarationParser._
+import de.thm.mni.ii.phpparser.parser.Basic.{EchoStartTag, QualifiedName, SemicolonFactory}
+import de.thm.mni.ii.phpparser.parser.expressions.ExpressionParser.Expression
+import de.thm.mni.ii.phpparser.parser.statements.ControlFlowParser._
+import de.thm.mni.ii.phpparser.parser.statements.DeclarationParser._
 
 /**
   * This object contains all basic statements

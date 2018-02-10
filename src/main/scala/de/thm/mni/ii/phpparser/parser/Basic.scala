@@ -1,15 +1,13 @@
-package de.thm.ii.phpparser.parser
+package de.thm.mni.ii.phpparser.parser
 
 import fastparse.noApi._
-import de.thm.ii.phpparser.parser.literals.WsAPI._
-import de.thm.ii.phpparser.parser.literals.Lexical.Ws
-
-import de.thm.ii.phpparser.parser.literals.Keywords.{PHP, NAMESPACE}
-import de.thm.ii.phpparser.parser.literals.Literals.Name
-
-import de.thm.ii.phpparser.ast.{Basic => BAst}
-
-import de.thm.ii.phpparser.parser.statements.StatementParser.AvailableStatement
+import de.thm.mni.ii.phpparser.parser.literals.WsAPI._
+import de.thm.mni.ii.phpparser.parser.literals.Lexical.Ws
+import de.thm.mni.ii.phpparser.parser.literals.Keywords.{NAMESPACE, PHP}
+import de.thm.mni.ii.phpparser.parser.literals.Literals.Name
+import de.thm.mni.ii.phpparser.ast.{Basic => BAst}
+import de.thm.mni.ii.phpparser.parser.statements.StatementParser.AvailableStatement
+import de.thm.mni.ii.phpparser.ast.Basic.Script
 
 object Basic {
 
@@ -22,7 +20,7 @@ object Basic {
   val WsExp = P(Ws | "(")
   val Semicolon = P(";" | "?>")
 
-  val Script : P[BAst.Script] = P(Text ~~ NormalStartTag.? ~ AvailableStatement.rep ~ End)
+  val Script : P[Script] = P(Text ~~ NormalStartTag.? ~ AvailableStatement.rep ~ End)
     .map(t => BAst.Script(t._1, t._3))
 
   val Text : P[BAst.Text] = P((!StartTag ~~ AnyChar.!).repX).map(t => BAst.Text(t.mkString))

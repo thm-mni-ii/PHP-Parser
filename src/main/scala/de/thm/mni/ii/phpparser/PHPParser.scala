@@ -1,13 +1,13 @@
-package de.thm.ii.phpparser
+package de.thm.mni.ii.phpparser
 
 import fastparse.all._
 import fastparse.core.Frame
-import de.thm.ii.phpparser.ast.Basic.Script
+import de.thm.mni.ii.phpparser.ast.Basic.Script
 
 object PHPParser {
 
   def parse(toParse: String) = {
-    val result = de.thm.ii.phpparser.parser.Basic.Script.parse(toParse)
+    val result = de.thm.mni.ii.phpparser.parser.Basic.Script.parse(toParse)
     result match {
       case Parsed.Success(value, currentIndex) => {
         PHPParser.Success(value)

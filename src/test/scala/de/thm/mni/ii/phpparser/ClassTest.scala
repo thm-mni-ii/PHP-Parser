@@ -1,9 +1,9 @@
-package de.thm.ii.phpparser
+package de.thm.mni.ii.phpparser
 
 import org.scalatest.{FlatSpec, Matchers}
-import de.thm.ii.phpparser.ast.Basic._
-import de.thm.ii.phpparser.ast.Expressions._
-import de.thm.ii.phpparser.ast.Statements._
+import de.thm.mni.ii.phpparser.ast.Basic._
+import de.thm.mni.ii.phpparser.ast.Expressions._
+import de.thm.mni.ii.phpparser.ast.Statements._
 
 import scala.collection.mutable.ArrayBuffer
 

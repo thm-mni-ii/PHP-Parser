@@ -1,7 +1,7 @@
-package de.thm.ii.phpparser.ast
+package de.thm.mni.ii.phpparser.ast
 
-import de.thm.ii.phpparser.ast.Expressions.{Expression, SimpleNameVar, Variable}
-import de.thm.ii.phpparser.ast.Statements.Statement
+import de.thm.mni.ii.phpparser.ast.Expressions.{Expression, SimpleNameVar, Variable}
+import de.thm.mni.ii.phpparser.ast.Statements.Statement
 
 object Basic {
 

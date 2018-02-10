@@ -1,4 +1,4 @@
-package de.thm.ii.phpparser.parser.literals
+package de.thm.mni.ii.phpparser.parser.literals
 
 object Lexical {
   import fastparse.all._
