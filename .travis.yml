@@ -19,3 +19,6 @@ cache:
   directories:
     - $HOME/.ivy2/cache
     - $HOME/.sbt
+
+after_success:
+  - "[[ $TRAVIS_BRANCH == \"master\" ]] && { sbt publish; };"
