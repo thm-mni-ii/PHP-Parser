@@ -8,7 +8,7 @@ services:
 
 script:
   - sbt compile
-  - sbt test
+  - sbt clean coverage test coverageReport && sbt coverageAggregate
 
 # see also https://docs.travis-ci.com/user/languages/java/#Caching
 before_cache:
@@ -21,4 +21,5 @@ cache:
     - $HOME/.sbt
 
 after_success:
+  - sbt coveralls
   - "[[ $TRAVIS_BRANCH == \"master\" ]] && { sbt publish; };"

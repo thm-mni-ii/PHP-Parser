@@ -1,3 +1,5 @@
+import org.scoverage.coveralls.Imports.CoverallsKeys._
+
 name := "PHPParser"
 
 scalaVersion := "2.12.2"
@@ -15,6 +17,8 @@ credentials ++= (for {
   username <- Option(System.getenv().get("SONATYPE_USERNAME"))
   password <- Option(System.getenv().get("SONATYPE_PASSWORD"))
 } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toSeq
+
+coverallsToken := Option(System.getenv().get("COVERALLS_TOKEN"))
 
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
