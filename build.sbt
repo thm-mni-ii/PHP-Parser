@@ -3,7 +3,7 @@ name := "PHPParser"
 scalaVersion := "2.12.2"
 
 organization := "de.thm.mni.ii"
-version := "1.0.0-SNAPSHOT"
+version := "1.0.0"
 
 libraryDependencies ++= Seq(
   "com.lihaoyi" %% "fastparse" % "0.4.2",
@@ -25,6 +25,8 @@ publishTo := {
 }
 
 pomIncludeRepository := { _ => false }
+publishArtifact in Test := false
+crossPaths := false
 
 licenses := Seq("MIT-style" -> url("http://www.opensource.org/licenses/mit-license.php"))
 homepage := Some(url("https://github.com/thm-mni-ii/Scala-PHP-Parser"))

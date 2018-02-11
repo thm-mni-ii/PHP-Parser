@@ -5,33 +5,14 @@ This project is written in Scala and can be used in **Java** and **Scala**. Base
 
 ## Getting Started
 
-There are different ways to include this library to your own projects. The following parts explain some methods to include them in Java and Scala. Currently you have to clone the repository to your local system and build the jar-file. Maven-support is planned for the future. 
+Import the artifacts from the nexus.
 
-#### Java
-
-At first you need to build a standalone jar-library with all dependencies including the core scala-library. The following sbt-command creates such a jar-file. 
-
-```console
-$ sbt assembly
-```
-
-#### Scala
-
-The previous command works in Scala, too. Nevertheless a jar-file with all dependencies is not necessary, if sbt can load these separately. To build a jar-file without dependencies, you need to execute the following command.
-
-```console
-$ sbt package
-```
-
-Another possible way is to publish the project to your local Ivy repository.
-```console
-$ sbt publishLocal
-```
-
-After that you need to include this line to your 'build.sbt' file.
-
-```scala
-libraryDependencies += "de.thm.mni.ii" %% "PHPParser" % "1.0"
+```xml
+<dependency>
+  <groupId>de.thm.mni.ii</groupId>
+  <artifactId>phpparser</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+</dependency>
 ```
 
 ## Usage
