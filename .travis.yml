@@ -20,6 +20,9 @@ cache:
     - $HOME/.ivy2/cache
     - $HOME/.sbt
 
+before_install:
+  - openssl aes-256-cbc -d -K $ENC_KEY -iv $ENC_IV -in project/gnupg/signkey.asc.enc -out project/gnupg/signkey.asc
+
 after_success:
   - sbt coveralls
-  - "[[ $TRAVIS_BRANCH == \"master\" ]] && { sbt publish; };"
+  - "[[ $TRAVIS_BRANCH == \"master\" ]] && { sbt publishSigned; };"

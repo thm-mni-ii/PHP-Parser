@@ -28,16 +28,24 @@ publishTo := {
     Some("releases"  at nexus + "service/local/staging/deploy/maven2")
 }
 
+publishMavenStyle := true
 pomIncludeRepository := { _ => false }
 publishArtifact in Test := false
 crossPaths := false
 
+useGpg := false
+usePgpKeyHex("5973708299E8EEEB4319D40156A5D5DE07E4EAA9")
+pgpPublicRing := baseDirectory.value / "project" / "gnupg" / "signkey.asc"
+pgpSecretRing := baseDirectory.value / "project" / "gnupg" / "signkey.asc"
+pgpPassphrase := sys.env.get("PGP_PASS").map(_.toArray)
+
 licenses := Seq("MIT-style" -> url("http://www.opensource.org/licenses/mit-license.php"))
-homepage := Some(url("https://github.com/thm-mni-ii/Scala-PHP-Parser"))
+homepage := Some(url("https://github.com/thm-mni-ii/PHP-Parser"))
+
 scmInfo := Some(
   ScmInfo(
-    url("https://github.com/thm-mni-ii/Scala-PHP-Parser"),
-    "scm:git@github.com:thm-mni-ii/Scala-PHP-Parser.git"
+    url("https://github.com/thm-mni-ii/PHP-Parser"),
+    "scm:git@github.com:thm-mni-ii/PHP-Parser.git"
   )
 )
 developers := List(
