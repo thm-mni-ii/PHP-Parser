@@ -25,4 +25,11 @@ before_install:
 
 after_success:
   - sbt coveralls
-  - "[[ $TRAVIS_BRANCH == \"master\" ]] && { sbt publishSigned; };"
+
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: sbt publishSigned
+  on:
+    tags: true
+    branch: master
