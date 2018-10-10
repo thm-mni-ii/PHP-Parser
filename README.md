@@ -1,17 +1,18 @@
 # PHP-Parser [![Build Status](https://travis-ci.org/thm-mni-ii/PHP-Parser.svg?branch=master)](https://travis-ci.org/thm-mni-ii/PHP-Parser) [![Coverage Status](https://coveralls.io/repos/github/thm-mni-ii/Scala-PHP-Parser/badge.svg?branch=master)](https://coveralls.io/github/thm-mni-ii/Scala-PHP-Parser?branch=master)
-This project contains an PHP-Parser based on the current [php language specification](https://github.com/php/php-langspec). It supports PHP version 7.
+This project contains a PHP-Parser based on the current [php language specification](https://github.com/php/php-langspec). It supports PHP version 7.
 
-This project is written in Scala and can be used in **Java** and **Scala**. Based on [FastParse](https://github.com/lihaoyi/fastparse) it transforms an valid PHP-String into an abstract syntax tree.
+The parser is written in Scala, but can be used in **Java** as well as in **Scala** projects.
+Based on [FastParse](https://github.com/lihaoyi/fastparse) it transforms a valid PHP-Script into an abstract syntax tree.
 
 ## Getting Started
 
-Import the artifacts from the nexus.
+Import the artifacts from Maven Central.
 
 ```xml
 <dependency>
   <groupId>de.thm.mni.ii</groupId>
   <artifactId>phpparser</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0</version>
 </dependency>
 ```
 
@@ -50,11 +51,9 @@ object Main extends App {
 }
 ```
 
-The top-level __PHPParser__ performs an parse on a whole script. The result is an instance of __PHPParser.Success__ or __PHPParser.Failure__. 
+The top-level __PHPParser__ parses a whole PHP-Script. The result is an instance of __PHPParser.Success__ or __PHPParser.Failure__. 
 
-__PHPParser.Success__ only contains the parsed result. __PHPParser.Failure__ contains additional information about the error. If you need further error information, take a look at the _failure_-member. FastParse provides additional methods to present the origin of the parse-error. 
-
-If you want to parse an specific element of the programing language, you can call _parse_ on any parser in the package parser. 
+__PHPParser.Success__ contains the abstract syntax tree. __PHPParser.Failure__ contains additional information about the error. If you need further error information, take a look at the _failure_-member. FastParse provides additional methods to present the origin of the parse-error. 
 
 ## Project Structure
 
@@ -70,14 +69,7 @@ If you want to parse an specific element of the programing language, you can cal
 
 ## Contribute
 
-Feel free to send Pull-Requests to improve this parser. If you find any bug, please report it as issue here on github. 
-
-This project is tested against several php-projects, but the current version does not contain unit tests. I would really appreciate it if someone can write some proper unit tests. 
-
-## Authors
-
-* **Tobias Viehmann** - *Initial work*
-
+Feel free to send Pull-Requests to improve this parser. If you find a bug, please report it as an issue on github. 
 
 ## License
 
