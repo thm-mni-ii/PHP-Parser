@@ -1,4 +1,4 @@
-# PHP-Parser [![Build Status](https://travis-ci.org/thm-mni-ii/PHP-Parser.svg?branch=master)](https://travis-ci.org/thm-mni-ii/PHP-Parser) [![Coverage Status](https://coveralls.io/repos/github/thm-mni-ii/Scala-PHP-Parser/badge.svg?branch=master)](https://coveralls.io/github/thm-mni-ii/Scala-PHP-Parser?branch=master)
+# PHP-Parser [![Build Status](https://travis-ci.org/thm-mni-ii/PHP-Parser.svg?branch=master)](https://travis-ci.org/thm-mni-ii/PHP-Parser) [![Coverage Status](https://coveralls.io/repos/github/thm-mni-ii/PHP-Parser/badge.svg?branch=master)](https://coveralls.io/github/thm-mni-ii/PHP-Parser?branch=master)
 This project contains a PHP-Parser based on the current [php language specification](https://github.com/php/php-langspec). It supports PHP version 7.
 
 The parser is written in Scala, but can be used in **Java** as well as in **Scala** projects.
